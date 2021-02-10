@@ -1,0 +1,398 @@
+---
+title: "Evaluate assay prediction baseded on chemical, genetic and morphological description "
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+section / description is not up-to-date.
+Changes 2020-09-05: 
+- evaluation of the top 1%, 2%, 5%, 10% with focus on the hit rate. We follow the question: if we only would select the top x% of the hits (best scores) for an validation expriment, how would the the hit rate increase compared to the scenario, where we consider all hits? 
+
+Open question: 
+- to which hit rate should we compare? It is natural to chose the hit rate of the test set, but we could also use the hit rate of test, training or a both. 
+
+Main changes in the code: function evaluate_chemprop load and evaluates the results. This function was exteded to evaluate only the top x% 
+
+
+
+http://ec2-52-90-145-233.compute-1.amazonaws.com:9100/hub/login
+
+Used input files: 
+response_train <- read_csv('../../../analysis/scaffold_based/assay_matrix_discrete_train_old_scaff.csv')  
+response <- read_csv('../../../analysis/scaffold_based/assay_matrix_discrete_test_old_scaff.csv')  
+assay_annotation <- read_csv('../../../analysis/201802_pumr_baseline_prediction_177_assays.csv')
+file_list <- list.files('../../../results/scaffold_based/chemprop/predictions', pattern = "*.csv", full.names = TRUE) 
+
+Output files / created files : 
+result_annotated %>% write_csv("../../../results/scaffold_based/chemprop/2020_07_evaluation_all_data.csv")
+result_analyzed %>% write_csv("../../../results/scaffold_based/chemprop/2020_07_evaluation.csv")
+
+This notebook is used to create the initial evaluation for the data in this study. 
+
+Notebooks that use the results
+* VennDiagramm 
+
+Tables created in this notebook:
+* distribution of assay type 
+
+
+```{r}
+library(tidyverse)
+library(magrittr)
+library(ggplot2)
+library(pROC)
+```
+# Statistics of the training data set 
+For each assay we calculate 
+1. total number of readouts/compounds 
+2. hits  
+3. hitrate 
+```{r}
+# response_train <- read_csv('../../../analysis/scaffold_based/assay_matrix_discrete_train_old_scaff.csv')
+response_train <- read_csv('../data/assay_matrix_discrete_train_old_scaff.csv')  
+
+values_per_assay_train <- response_train %>% 
+  select(-Metadata_broad_sample_simple) %>% 
+  summarise_all(funs(sum(!is.na(.)))) %>% 
+  as.matrix() %>% 
+  t() %>% 
+  print
+
+hits_per_assay_train <- response_train %>%
+  select(-Metadata_broad_sample_simple) %>% 
+  colSums(., na.rm = TRUE) %>% 
+  as_tibble() %>% 
+  rename(hits = value) %>% 
+  mutate(assay_id = colnames(response_train %>% select(-Metadata_broad_sample_simple)), readouts = values_per_assay_train) %>% 
+  select(assay_id, readouts, hits) %>%
+  mutate(hit_rate = hits/readouts) %>%
+  filter(hits > 0) %>%
+  arrange(-hits) %>% 
+  print
+
+ggplot(hits_per_assay_train, aes(x = hits)) + 
+  geom_histogram() + 
+  theme_test()
+
+ggplot(hits_per_assay_train, aes(x = hit_rate)) + 
+  geom_histogram() + 
+  theme_test()
+
+ggplot(hits_per_assay_train, aes(x = hit_rate, y = readouts)) + 
+  geom_point() + 
+  theme_test()
+
+hits_per_assay_train %>% 
+  summarise(mean_hit_rate = mean(hit_rate, na.rm = TRUE))
+```
+
+# Statistics of the test data set 
+For each assay we calculate 
+1. total number of readouts/compounds 
+2. hits  
+3. hitrate 
+```{r}
+# response <- read_csv('../../../analysis/scaffold_based/assay_matrix_discrete_test_old_scaff.csv')
+response <- read_csv('../data/assay_matrix_discrete_test_old_scaff.csv')  
+
+values_per_assay <- response %>% 
+  select(-Metadata_broad_sample_simple) %>% 
+  summarise_all(funs(sum(!is.na(.)))) %>% 
+  as.matrix() %>% 
+  t() %>% 
+  print
+
+hits_per_assay <- response %>%
+  select(-Metadata_broad_sample_simple) %>% 
+  colSums(., na.rm = TRUE) %>% 
+  as_tibble() %>% 
+  rename(hits = value) %>% 
+  mutate(assay_id = colnames(response %>% select(-Metadata_broad_sample_simple)), readouts = values_per_assay) %>% 
+  select(assay_id, readouts, hits) %>%
+  mutate(hit_rate = hits/readouts) %>%
+  filter(hits > 0) %>% 
+  arrange(-hits) %>% 
+  print
+
+ggplot(hits_per_assay, aes(x = hits)) + 
+  geom_histogram() + 
+  theme_test()
+
+ggplot(hits_per_assay, aes(x = hit_rate)) + 
+  geom_histogram() + 
+  theme_test()
+
+ggplot(hits_per_assay, aes(x = hit_rate, y = readouts)) + 
+  geom_point() + 
+  theme_test()
+
+hits_per_assay %>% 
+  summarise(mean_hit_rate = mean(hit_rate))
+```
+
+# Read manually annotated assay information
+For some assays the assay type was manually labeled
+```{r}
+# assay_annotation <- read_csv('../../../analysis/201802_pumr_baseline_prediction_177_assays.csv') %>%
+assay_annotation <- read_csv('../data/201802_pumr_baseline_prediction_177_assays.csv') %>%
+  select(ASSAY_PUMA_ID, n_compounds, ASSAY_ID, ASSAY_NAME, OBS_NAME, OBS_SOURCE, ASSAY_TYPE, READOUT_TYPE,candidates) 
+
+# how many different assay types are available?
+unique(assay_annotation$ASSAY_TYPE)
+
+## todo: check entry with obs source 762, the row is invalid 
+assay_annotation %>% filter(OBS_SOURCE == 762)
+```
+# remove the wrongly annotated entry with OBS_SOURCE 762
+```{r}
+assay_annotation %<>% filter(OBS_SOURCE != 762)
+```
+
+# Assay count by assay source
+```{r}
+assay_annotation %>% 
+  group_by(ASSAY_TYPE) %>% 
+  summarise(n = n()) %>% 
+  arrange(-n)
+```
+```{r}
+assay_annotation_summary <- assay_annotation %>% 
+  group_by(ASSAY_TYPE) %>% 
+  summarise(n = n()) %>% 
+  arrange(ASSAY_TYPE)  %>% 
+  print
+
+assay_annotation_summary %<>%
+  mutate( percentage = n / sum(assay_annotation_summary$n) ) %>% 
+  mutate( percentage_text = paste0(round(1000 * percentage) /10,"%") ) %>% 
+  select(ASSAY_TYPE, n , percentage_text, percentage) %>% 
+  print
+```
+
+```{r}
+ggplot(data = assay_annotation_summary,  aes(x="", y=n, fill=ASSAY_TYPE)) +
+  geom_bar(width = 1, stat = "identity") + 
+  geom_text(aes(x=1.6,label = percentage_text), size = 4,position = position_stack(vjust = 0.5))+ 
+  coord_polar("y", start=0) + 
+  theme_void()+ 
+  scale_fill_brewer(palette = "RdBu") 
+```
+
+# Evaluate assays  
+
+## define helper functions for evaluation 
+The results are stored separately for each predictor and sequetially read, evluated and all resuls are merged into one data frame. 
+```{r}
+# helper function to catch test data without hits (only 0 or NA values)
+auc_with_na <- function(response, result){
+  ifelse(
+    max(response >0, na.rm = TRUE) == 0,
+    return(NA), 
+    auc(response, result, direction = "<", levels = c(0, 1))
+  )
+} 
+
+
+# helper function to catch test data without hits (only 0 or NA values)
+prauc_with_na <- function(response, result){
+  ifelse(
+    max(response >0, na.rm = TRUE) == 0,
+    return(NA), 
+    pr.curve(response, result, direction = "<", levels = c(0, 1))
+  )
+} 
+
+# read and evaluate predictions and return results as data frame
+evaluate_chemprop <- function(path_prediction) {
+  
+  predictions <- read_csv(path_prediction)
+  
+  descriptor <- basename(path_prediction) %>% str_sub(13,-5) 
+  tibble(
+    assay_id = colnames(response[,2:length(response)]),
+    auc = mapply(
+      auc_with_na, 
+      as.list(response[,2:length(response)]), as.list(predictions[,2:length(predictions)]) 
+      ),
+    descriptor = descriptor
+  )
+} 
+
+
+# read and evaluate predictions and return results as data frame
+evaluate_chemprop_top_ranked_hit_rate <- function(path_prediction) {
+  
+  predictions <- read_csv(path_prediction)
+  #predictions <- read_csv(file_list[11])
+  
+  descriptor <- basename(path_prediction) %>% str_sub(13,-5) 
+  tibble(
+    assay_id = colnames(response[,2:length(response)]),
+    top_rank_hit_rate = mapply(
+      calculate_top_rank_hit_rate, 
+      as.list(response[,2:length(response)]), as.list(predictions[,2:length(predictions)]) 
+      ),
+    descriptor = descriptor
+  )
+} 
+
+calculate_top_rank_hit_rate <- function(response, prediction){
+  
+  df_sample <- data.frame(
+    prediction = prediction, 
+    response = response
+  ) 
+    
+  # we remove all predictions that are not available in 
+  # the reference data  i.e. that have an na value in response 
+  df_sample %<>% filter(complete.cases(.)) 
+  
+  # we sort by predicted value 
+  df_sample %<>% arrange(-prediction)
+  
+  df_sample %<>% slice(1:ceiling(nrow(df_sample) * percentage ))
+  
+  return(sum(df_sample$response) / nrow(df_sample))
+}
+
+```
+## sequentially read and evaluate predictions 
+```{r}
+percentage <- 0.01
+
+# file_list <- list.files('../../../results/scaffold_based/chemprop/predictions', pattern = "*.csv", full.names = TRUE)
+file_list <- list.files('../predictions', pattern = "*.csv", full.names = TRUE) 
+
+result_hit_rate <- do.call(rbind, lapply(file_list, evaluate_chemprop_top_ranked_hit_rate)) %>% 
+  print
+
+result_hit_rate %>% 
+  filter(descriptor %in%  c("cp_op_es","mo_op_es","ge_op_es","mo_cp_op_es","ge_mo_cp_op_es","ge_mo","ge_cp_op_es")) %>% 
+  mutate(descriptor=replace(descriptor, descriptor=="mo_cp_op_es", "CS+MO")) %>%
+  mutate(descriptor=replace(descriptor, descriptor=="ge_mo_cp_op_es", "CS+GE+MO")) %>%
+  mutate(descriptor=replace(descriptor, descriptor=="ge_mo", "GE+MO")) %>%
+  mutate(descriptor=replace(descriptor, descriptor=="ge_cp_op_es", "CS+GE")) %>%
+  mutate(descriptor=replace(descriptor, descriptor=="mo_op_es", "MO")) %>%
+  mutate(descriptor=replace(descriptor, descriptor=="ge_op_es", "GE")) %>%
+  mutate(descriptor=replace(descriptor, descriptor=="cp_op_es", "CS")) %>% 
+  write_csv("../results/2020-09-08-hit-rate-ranked.csv")
+```
+
+```{r}
+
+hit_rate_summary <- result_hit_rate %>% 
+  group_by(descriptor) %>% 
+  summarise(
+    mean_top_rank_hit_rate = mean(top_rank_hit_rate),
+    sd_top_rank_hit_rate = sd(top_rank_hit_rate)
+    ) %>% 
+  mutate(mean_baseline_hitrate =  mean(hits_per_assay_train$hit_rate)) %>% 
+  print 
+
+# question: what is the improvement of hit rate in the top ranked assays when we take into account only/all assays with an auc > 0.9? 
+# we have to re-calculate these numbers? 
+```
+
+# prototype code to test functions 
+```{r}
+percentage <- 0.01
+sample_assay_id <- '241_715'
+
+response
+
+assay_ids = colnames(response[,2:length(response)])
+
+
+predictions <- read_csv(file_list[10])
+prediction <- predictions %>% extract2(sample_assay_id)
+# response <-  response %>% extract2(sample_assay_id)
+
+calculate_top_rank_hit_rate(response, prediction )
+
+
+hits_per_assay_train
+
+
+ predictions <- read_csv(file_list[11])
+ 
+ descriptor <- basename(file_list[11]) %>% str_sub(13,-5) 
+ 
+  tibble(
+    assay_id = colnames(response[,2:length(response)]),
+    hit_rate = mapply(
+      calculate_top_rank_hit_rate, 
+      as.list(response[,2:length(response)]), as.list(predictions[,2:length(predictions)]) 
+      ),
+    descriptor = descriptor
+  )
+```
+
+
+```{r}
+result <- do.call(rbind, lapply(file_list, evaluate_chemprop)) %>% 
+  mutate("auc_70" = auc >0.7) %>% 
+  mutate("auc_90" = auc >0.9) 
+```
+
+## add readout count, number of hits and hit rate 
+```{r} 
+result %<>% left_join(., hits_per_assay, by = "assay_id")
+```
+
+## add manual annotations
+```{r}
+result_annotated <- left_join(
+  result,
+  assay_annotation %>% filter(OBS_SOURCE != 762) %>%  
+    select(ASSAY_TYPE, ASSAY_PUMA_ID) %>%
+    rename(assay_id = ASSAY_PUMA_ID),
+  by = c("assay_id")
+  
+) %>% 
+  print
+```
+
+## Create data frame containing all assay information used for analysis
+Descriptors will be renamed and filtered. 
+
+Details: For some descriptors we calculated several predictors. We only keep predictors with 
+hyperparameter optimized ensemble model (these descriptors end with 'op_es'). The only 
+excemption is the predictor using genetic and morphological information. 
+```{r}
+result_analyzed <- result_annotated %>% 
+  filter(descriptor %in%  c("cp_op_es","mo_op_es","ge_op_es","mo_cp_op_es","ge_mo_cp_op_es","ge_mo","ge_cp_op_es")) %>% 
+  mutate(descriptor=replace(descriptor, descriptor=="mo_cp_op_es", "CS+MO")) %>%
+  mutate(descriptor=replace(descriptor, descriptor=="ge_mo_cp_op_es", "CS+GE+MO")) %>%
+  mutate(descriptor=replace(descriptor, descriptor=="ge_mo", "GE+MO")) %>%
+  mutate(descriptor=replace(descriptor, descriptor=="ge_cp_op_es", "CS+GE")) %>%
+  mutate(descriptor=replace(descriptor, descriptor=="mo_op_es", "MO")) %>%
+  mutate(descriptor=replace(descriptor, descriptor=="ge_op_es", "GE")) %>%
+  mutate(descriptor=replace(descriptor, descriptor=="cp_op_es", "CS")) 
+```
+
+
+## write all assays as csv 
+```{}
+# all results 
+result_annotated %>% write_csv("../../../results/scaffold_based/chemprop/2020_07_evaluation_all_data.csv")
+# results relevant  for analysis
+result_analyzed %>% write_csv("../../../results/scaffold_based/chemprop/2020_07_evaluation.csv")
+```
+## Summary of predictor using AUC
+```{r}
+result %>% 
+  group_by(descriptor) %>% 
+  summarize(assays_total = n(),
+          assays_evaluated = sum(!is.na(auc)),
+          assays_not_evaluated = sum(is.na(auc)),
+          auc_mean = mean(auc, na.rm = TRUE), 
+          auc_70 = sum(auc_70, na.rm = TRUE), 
+          auc_90 = sum(auc_90, na.rm = TRUE)
+          ) %>% 
+  arrange(-auc_mean) %>% 
+  select(-assays_total, -assays_evaluated,-assays_not_evaluated) %>%
+  knitr::kable()
+``` 

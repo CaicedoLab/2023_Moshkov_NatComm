@@ -1,0 +1,305 @@
+---
+title: "Evaluate assay prediction baseded on chemical, genetic and morphological description "
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+http://ec2-52-90-145-233.compute-1.amazonaws.com:9100/hub/login
+
+initial evaluation for the data in this study. 
+
+Notebooks that use the results
+* VennDiagramm 
+
+Tables created in this notebook:
+* distribution of assay type 
+
+
+```{r}
+library(tidyverse)
+library(magrittr)
+library(ggplot2)
+library(pROC)
+```
+# Statistics of the training data set 
+For each assay we calculate 
+1. total number of readouts/compounds 
+2. hits  
+3. hitrate 
+```{r}
+# response_train <- read_csv('../../../analysis/scaffold_based/assay_matrix_discrete_train_old_scaff.csv')
+response_train <- read_csv('../data/assay_matrix_discrete_train_old_scaff.csv')  
+
+values_per_assay_train <- response_train %>% 
+  select(-Metadata_broad_sample_simple) %>% 
+  summarise_all(funs(sum(!is.na(.)))) %>% 
+  as.matrix() %>% 
+  t() %>% 
+  print
+
+hits_per_assay_train <- response_train %>%
+  select(-Metadata_broad_sample_simple) %>% 
+  colSums(., na.rm = TRUE) %>% 
+  as_tibble() %>% 
+  rename(hits = value) %>% 
+  mutate(assay_id = colnames(response_train %>% select(-Metadata_broad_sample_simple)), readouts = values_per_assay_train) %>% 
+  select(assay_id, readouts, hits) %>%
+  mutate(hit_rate = hits/readouts) %>%
+  filter(hits > 0) %>%
+  arrange(-hits) %>% 
+  print
+
+ggplot(hits_per_assay_train, aes(x = hits)) + 
+  geom_histogram() + 
+  theme_test()
+
+ggplot(hits_per_assay_train, aes(x = hit_rate)) + 
+  geom_histogram() + 
+  theme_test()
+
+ggplot(hits_per_assay_train, aes(x = hit_rate, y = readouts)) + 
+  geom_point() + 
+  theme_test()
+
+hits_per_assay_train %>% 
+  summarise(mean_hit_rate = mean(hit_rate, na.rm = TRUE))
+```
+
+```{}
+df <- left_join( 
+  result,
+  hits_per_assay_train %>% 
+  rename("hits_train" = hits)  %>% 
+  rename("readouts_train" = readouts)  %>% 
+  rename("hit_rate_train" = hit_rate),
+  by = "assay_id"
+) 
+
+ggplot(data = df, aes(x = readouts_train, y = auc)) + 
+  geom_point() +
+  geom_smooth()
+
+ggplot(data = df, aes(x = hits_train, y = auc)) + 
+  geom_point() +
+  geom_smooth()
+  
+ggplot(data = df, aes(x = hit_rate_train, y = auc, color = ASSAY_TYPE)) + 
+  geom_point() +
+  geom_smooth(alpha = .2)
+  
+
+```
+
+# Statistics of the test data set 
+For each assay we calculate 
+1. total number of readouts/compounds 
+2. hits  
+3. hitrate 
+```{r}
+# response <- read_csv('../../../analysis/scaffold_based/assay_matrix_discrete_test_old_scaff.csv')
+response <- read_csv('../data/assay_matrix_discrete_test_old_scaff.csv')  
+
+values_per_assay <- response %>% 
+  select(-Metadata_broad_sample_simple) %>% 
+  summarise_all(funs(sum(!is.na(.)))) %>% 
+  as.matrix() %>% 
+  t() %>% 
+  print
+
+hits_per_assay <- response %>%
+  select(-Metadata_broad_sample_simple) %>% 
+  colSums(., na.rm = TRUE) %>% 
+  as_tibble() %>% 
+  rename(hits = value) %>% 
+  mutate(assay_id = colnames(response %>% select(-Metadata_broad_sample_simple)), readouts = values_per_assay) %>% 
+  select(assay_id, readouts, hits) %>%
+  mutate(hit_rate = hits/readouts) %>%
+  filter(hits > 0) %>% 
+  arrange(-hits) %>% 
+  print
+
+ggplot(hits_per_assay, aes(x = hits)) + 
+  geom_histogram() + 
+  theme_test()
+
+ggplot(hits_per_assay, aes(x = hit_rate)) + 
+  geom_histogram() + 
+  theme_test()
+
+ggplot(hits_per_assay, aes(x = hit_rate, y = readouts)) + 
+  geom_point() + 
+  theme_test()
+
+hits_per_assay %>% 
+  summarise(mean_hit_rate = mean(hit_rate))
+```
+
+# Read manually annotated assay information
+For some assays the assay type was manually labeled
+```{r}
+# assay_annotation <- read_csv('../../../analysis/201802_pumr_baseline_prediction_177_assays.csv') %>%
+assay_annotation <- read_csv('../data/201802_pumr_baseline_prediction_177_assays.csv') %>%
+  select(ASSAY_PUMA_ID, n_compounds, ASSAY_ID, ASSAY_NAME, OBS_NAME, OBS_SOURCE, ASSAY_TYPE, READOUT_TYPE,candidates) 
+
+# how many different assay types are available?
+unique(assay_annotation$ASSAY_TYPE)
+
+## todo: check entry with obs source 762, the row is invalid 
+assay_annotation %>% filter(OBS_SOURCE == 762)
+```
+# remove the wrongly annotated entry with OBS_SOURCE 762
+```{r}
+assay_annotation %<>% filter(OBS_SOURCE != 762)
+```
+
+# Assay count by assay source
+```{r}
+assay_annotation %>% 
+  group_by(ASSAY_TYPE) %>% 
+  summarise(n = n()) %>% 
+  arrange(-n)
+```
+```{r}
+assay_annotation_summary <- assay_annotation %>% 
+  group_by(ASSAY_TYPE) %>% 
+  summarise(n = n()) %>% 
+  arrange(ASSAY_TYPE)  %>% 
+  print
+
+assay_annotation_summary %<>%
+  mutate( percentage = n / sum(assay_annotation_summary$n) ) %>% 
+  mutate( percentage_text = paste0(round(1000 * percentage) /10,"%") ) %>% 
+  select(ASSAY_TYPE, n , percentage_text, percentage) %>% 
+  print
+```
+
+```{r}
+ggplot(data = assay_annotation_summary,  aes(x="", y=n, fill=ASSAY_TYPE)) +
+  geom_bar(width = 1, stat = "identity") + 
+  geom_text(aes(x=1.6,label = percentage_text), size = 4,position = position_stack(vjust = 0.5))+ 
+  coord_polar("y", start=0) + 
+  theme_void()+ 
+  scale_fill_brewer(palette = "RdBu") 
+```
+
+# Evaluate assays  
+
+## define helper functions for evaluation 
+The results are stored separately for each predictor and sequetially read, evluated and all resuls are merged into one data frame. 
+```{r}
+# helper function to catch test data without hits (only 0 or NA values)
+auc_with_na <- function(response, result){
+  ifelse(
+    max(response >0, na.rm = TRUE) == 0,
+    return(NA), 
+    auc(response, result, direction = "<", levels = c(0, 1))
+  )
+} 
+
+# helper function to catch test data without hits (only 0 or NA values)
+prauc_with_na <- function(response, result){
+  ifelse(
+    max(response >0, na.rm = TRUE) == 0,
+    return(NA), 
+    pr.curve(response, result, direction = "<", levels = c(0, 1))
+  )
+} 
+
+# read and evaluate predictions and return results as data frame
+evaluate_chemprop <- function(path_prediction) {
+  predictions <- read_csv(path_prediction)
+  descriptor <- basename(path_prediction) %>% str_sub(1,-5) 
+  tibble(
+    assay_id = colnames(response[,2:length(response)]),
+    auc = mapply(
+      auc_with_na, 
+      as.list(response[,2:length(response)]), as.list(predictions[,2:length(predictions)]) 
+      ),
+    descriptor = descriptor
+  )
+} 
+```
+
+## sequentially read and evaluate predictions 
+```{r}
+# file_list <- list.files('../../../results/scaffold_based/chemprop/predictions/late_fusion/', pattern = "*.csv", full.names = TRUE)
+file_list <- list.files('../predictions/late_fusion/max_fusion/', pattern = "*.csv", full.names = TRUE) 
+
+result <- do.call(rbind, lapply(file_list, evaluate_chemprop)) %>% 
+  mutate("auc_70" = auc >0.7) %>% 
+  mutate("auc_90" = auc >0.9) 
+```
+
+## add readout count, number of hits and hit rate 
+```{r} 
+result %<>% left_join(., hits_per_assay, by = "assay_id")
+
+
+```
+
+## add manual annotations
+```{r}
+result_annotated <- left_join(
+  result,
+  assay_annotation %>% filter(OBS_SOURCE != 762) %>%  
+    select(ASSAY_TYPE, ASSAY_PUMA_ID) %>%
+    rename(assay_id = ASSAY_PUMA_ID),
+  by = c("assay_id")
+  
+) %>% 
+  print
+```
+```{r}
+result_annotated %>% group_by(descriptor) %>% slice(1) %>% print
+```
+
+## Create data frame containing all assay information used for analysis
+Descriptors will be renamed and filtered. 
+
+Details: For some descriptors we calculated several predictors. We only keep predictors with 
+hyperparameter optimized ensemble model (these descriptors end with 'op_es'). The only 
+excemption is the predictor using genetic and morphological information. 
+```{r}
+result_analyzed <- result_annotated %>% 
+  filter(descriptor %in%  c("max_fusion_cp_mo_op_es","max_fusion_cp_ge_mo_op_es","max_fusion_ge_mo_op_es","max_fusion_cp_ge_op_es","mean_fusion_cp_mo_op_es","mean_fusion_cp_ge_mo_op_es","mean_fusion_ge_mo_op_es","mean_fusion_cp_ge_op_es")) %>% 
+  mutate(descriptor=replace(descriptor, descriptor=="mean_fusion_cp_mo_op_es", "mean CS+MO")) %>%
+  mutate(descriptor=replace(descriptor, descriptor=="mean_fusion_cp_ge_mo_op_es", "mean CS+GE+MO")) %>%
+  mutate(descriptor=replace(descriptor, descriptor=="mean_fusion_ge_mo_op_es", "mean GE+MO")) %>%
+  mutate(descriptor=replace(descriptor, descriptor=="mean_fusion_cp_ge_op_es", "mean CS+GE")) %>%
+  mutate(descriptor=replace(descriptor, descriptor=="max_fusion_cp_mo_op_es", "max CS+MO")) %>%
+  mutate(descriptor=replace(descriptor, descriptor=="max_fusion_cp_ge_mo_op_es", "max CS+GE+MO")) %>%
+  mutate(descriptor=replace(descriptor, descriptor=="max_fusion_ge_mo_op_es", "max GE+MO")) %>%
+  mutate(descriptor=replace(descriptor, descriptor=="max_fusion_cp_ge_op_es", "max CS+GE"))
+
+result_analyzed
+  
+```
+
+
+## write all assays as csv 
+```{r}
+# all results 
+# result_annotated %>% write_csv("../../../results/scaffold_based/chemprop/2020_07_evaluation_late_fusion_all_data.csv")
+result_annotated %>% write_csv("../results/2020_07_evaluation_late_fusion_all_data.csv")
+# results relevant  for analysis
+# result_analyzed %>% write_csv("../../../results/scaffold_based/chemprop/2020_07_evaluation_late_fusion.csv")
+result_analyzed %>% write_csv("../results/2020_07_evaluation_late_fusion.csv")
+```
+## Summary of predictor using AUC
+```{r}
+result %>% 
+  group_by(descriptor) %>% 
+  summarize(assays_total = n(),
+          assays_evaluated = sum(!is.na(auc)),
+          assays_not_evaluated = sum(is.na(auc)),
+          auc_mean = mean(auc, na.rm = TRUE), 
+          auc_70 = sum(auc_70, na.rm = TRUE), 
+          auc_90 = sum(auc_90, na.rm = TRUE)
+          ) %>% 
+  arrange(-auc_mean) %>% 
+  select(-assays_total, -assays_evaluated,-assays_not_evaluated) %>%
+  knitr::kable()
+```

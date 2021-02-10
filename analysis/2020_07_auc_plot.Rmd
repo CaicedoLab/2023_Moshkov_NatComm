@@ -1,0 +1,848 @@
+---
+title: "read_chemprop_predictions"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+http://ec2-52-90-145-233.compute-1.amazonaws.com:9100/hub/login
+
+
+```{r}
+library(tidyverse)
+library(magrittr)
+library(pROC)
+library(eulerr)
+library(PRROC)
+library(ggplot2)
+  library(plotROC)
+```
+
+# read test data 
+```{r}
+response_train <- read_csv('../../../analysis/scaffold_based/assay_matrix_discrete_train_old_scaff.csv')  %>% 
+  print
+
+values_per_assay_train <- response_train %>% 
+  select(-Metadata_broad_sample_simple) %>% 
+  summarise_all(funs(sum(!is.na(.)))) %>% 
+  as.matrix() %>% 
+  t() %>% 
+  print
+
+hits_per_assay_train <- response_train %>%
+  select(-Metadata_broad_sample_simple) %>% 
+  colSums(., na.rm = TRUE) %>% 
+  as_tibble() %>% 
+  rename(hits = value) %>% 
+  mutate(assay_id = colnames(response_train %>% select(-Metadata_broad_sample_simple)), readouts = values_per_assay_train) %>% 
+  select(assay_id, readouts, hits) %>%
+  mutate(hit_rate = hits/readouts) %>%
+  filter(hits > 0) %>%
+  arrange(-hits) %>% 
+  print
+
+ggplot(hits_per_assay_train, aes(x = hits)) + 
+  geom_histogram() + 
+  theme_test()
+
+ggplot(hits_per_assay_train, aes(x = hit_rate)) + 
+  geom_histogram() + 
+  theme_test()
+
+ggplot(hits_per_assay_train, aes(x = hit_rate, y = readouts)) + 
+  geom_point() + 
+  theme_test()
+
+hits_per_assay_train %>% 
+  summarise(mean_hit_rate = mean(hit_rate, na.rm = TRUE))
+
+
+```
+
+# read test data 
+```{r}
+response <- read_csv('../../../analysis/scaffold_based/assay_matrix_discrete_test_old_scaff.csv')  %>% 
+  print
+
+values_per_assay <- response %>% 
+  select(-Metadata_broad_sample_simple) %>% 
+  summarise_all(funs(sum(!is.na(.)))) %>% 
+  as.matrix() %>% 
+  t() %>% 
+  print
+
+hits_per_assay <- response %>%
+  select(-Metadata_broad_sample_simple) %>% 
+  colSums(., na.rm = TRUE) %>% 
+  as_tibble() %>% 
+  rename(hits = value) %>% 
+  mutate(assay_id = colnames(response %>% select(-Metadata_broad_sample_simple)), readouts = values_per_assay) %>% 
+  select(assay_id, readouts, hits) %>%
+  mutate(hit_rate = hits/readouts) %>%
+  filter(hits > 0) %>% 
+  arrange(-hits) %>% 
+  print
+
+ggplot(hits_per_assay, aes(x = hits)) + 
+  geom_histogram() + 
+  theme_test()
+
+ggplot(hits_per_assay, aes(x = hit_rate)) + 
+  geom_histogram() + 
+  theme_test()
+
+ggplot(hits_per_assay, aes(x = hit_rate, y = readouts)) + 
+  geom_point() + 
+  theme_test()
+
+hits_per_assay %>% 
+  summarise(mean_hit_rate = mean(hit_rate))
+
+
+```
+
+# we read one prediction file to get the test assays
+```{r}
+one_prediction <- read_csv('../../../results/scaffold_based/chemprop/predictions/predictions_cp_op.csv')
+```
+
+# todo 
+# 1. class inabalce for each assay 
+# 2. tested compounds for each assay
+
+
+# annoated assay information from bridget 
+```{r}
+assay_annotation <- read_csv('../../../analysis/201802_pumr_baseline_prediction_177_assays.csv') %>%
+  select(ASSAY_PUMA_ID, n_compounds, ASSAY_ID, ASSAY_NAME, OBS_NAME, OBS_SOURCE, ASSAY_TYPE, READOUT_TYPE,candidates) %>% 
+  print
+```
+
+```{r}
+# how many different assay types are available?
+unique(assay_annotation$ASSAY_TYPE)
+
+## todo: check entry with obs source 762, the row is invalid 
+assay_annotation %>% filter(OBS_SOURCE == 762)
+```
+
+```{r}
+assay_annotation %>% 
+  filter(OBS_SOURCE != 762) %>% 
+  group_by(ASSAY_TYPE) %>% 
+  summarise(n = n()) %>% 
+  arrange(-n)
+```
+
+# define helper functions
+```{r}
+# helper function to catch test data without hits (only 0 or NA values)
+auc_with_na <- function(response, result){
+  ifelse(
+    max(response >0, na.rm = TRUE) == 0,
+    return(NA), 
+    auc(response, result, direction = "<", levels = c(0, 1))
+  )
+} 
+
+# TODO
+# helper function to catch test data without hits (only 0 or NA values)
+prauc_with_na <- function(response, result){
+  ifelse(
+    max(response >0, na.rm = TRUE) == 0,
+    return(NA), 
+    pr.curve(response, result, direction = "<", levels = c(0, 1))
+  )
+} 
+
+# read and evaluate predictions and return results as data frame
+evaluate_chemprop <- function(path_prediction) {
+  predictions <- read_csv(path_prediction)
+  descriptor <- basename(path_prediction) %>% str_sub(13,-5) 
+  tibble(
+    assay_id = colnames(response[,2:length(response)]),
+    auc = mapply(
+      auc_with_na, 
+      as.list(response[,2:length(response)]), as.list(predictions[,2:length(predictions)]) 
+      ),
+    descriptor = descriptor
+  )
+} 
+
+```
+The main characteristic of the assay data is
+1. sparseness 
+2. class inbalance 
+# 
+```{r}
+
+file_list <- list.files('../../../results/scaffold_based/chemprop/predictions', pattern = "*.csv", full.names = TRUE) %>% 
+  print
+
+result <- do.call(rbind, lapply(file_list, evaluate_chemprop)) %>% 
+  mutate("auc_70" = auc >0.7) %>% 
+  mutate("auc_90" = auc >0.9) 
+
+
+result %>% 
+  group_by(descriptor) %>% 
+  summarize(assays_total = n(),
+          assays_evaluated = sum(!is.na(auc)),
+          assays_not_evaluated = sum(is.na(auc)),
+          auc_mean = mean(auc, na.rm = TRUE), 
+          auc_70 = sum(auc_70, na.rm = TRUE), 
+          auc_90 = sum(auc_90, na.rm = TRUE)
+          ) %>% 
+  arrange(-auc_mean) %>% 
+  #slice(1:20) %>% 
+  select(-assays_total, -assays_evaluated,-assays_not_evaluated) %>%
+  knitr::kable()
+
+result %>% 
+  group_by(descriptor) %>% 
+  summarize(assays_total = n(),
+          assays_evaluated = sum(!is.na(auc)),
+          assays_not_evaluated = sum(is.na(auc)),
+          auc_mean = mean(auc, na.rm = TRUE), 
+          auc_70 = sum(auc_70, na.rm = TRUE), 
+          auc_90 = sum(auc_90, na.rm = TRUE)
+          ) %>% 
+  arrange(-auc_90) %>% 
+  slice(1:5) %>% 
+  select(-assays_total, -assays_evaluated,-assays_not_evaluated) %>%
+  knitr::kable()
+
+```
+merge results with assay annotation 
+
+
+```{r}
+df <- left_join(
+  result,
+  assay_annotation %>% filter(OBS_SOURCE != 762) %>%  
+    select(ASSAY_TYPE, ASSAY_PUMA_ID) %>%
+    rename(assay_id = ASSAY_PUMA_ID),
+  by = c("assay_id")
+  
+) %>% 
+  print
+
+```
+
+```{r}
+df %>% 
+  filter(!is.na(ASSAY_TYPE)) %>% 
+  group_by(descriptor, ASSAY_TYPE) %>% 
+  filter(!is.na(auc)) %>% 
+  summarise(n = n(),mean_auc = mean(auc),  percentage_auc90 = mean(auc_90),  percentage_auc70 = mean(auc_70)) %>% 
+  write_csv("../../../results/2020-07-results-by-descriptor.csv")
+```
+
+
+```{r}
+df %>% 
+  filter(!is.na(ASSAY_TYPE)) %>%
+  filter(ASSAY_TYPE == "bacterial") %>% 
+  group_by(descriptor, ASSAY_TYPE) %>% 
+  filter(!is.na(auc)) %>% 
+  summarise(n = n(),mean_auc = mean(auc), n_auc_90 = sum(auc_90), percentage_auc90 = mean(auc_90),  percentage_auc70 = mean(auc_70)) %>%
+  arrange(-percentage_auc90)
+  print
+
+```
+
+```{r}
+result %>% 
+  group_by(descriptor) %>% 
+  filter(!is.na(auc)) %>% 
+  summarise(n = n(),mean_auc = mean(auc), n_auc_90 = sum(auc_90), percentage_auc90 = mean(auc_90),  percentage_auc70 = mean(auc_70)) %>%
+  arrange(-percentage_auc90) %>% 
+  print
+```
+
+```{r}
+
+result %<>% left_join(., hits_per_assay, by = "assay_id")
+
+result %>% 
+  filter(descriptor %in% c("cp_op_es","mo_op_es","ge_op_es","mo_cp_op_es","ge_mo_cp_op_es")) %>% 
+  group_by(descriptor) %>% 
+  filter(hits>40) %>% 
+  arrange(-auc) %>% 
+  slice(1:2)
+
+```
+
+```{r}
+ggplot(
+  result %>% 
+    filter(descriptor %in% c("cp_op_es","mo_op_es","ge_op_es","mo_cp_op_es","ge_mo_cp_op_es")), 
+  aes(x = readouts, y = auc, color = descriptor) 
+  ) + 
+  geom_point() + 
+   facet_grid(. ~ descriptor ) 
+  #coord_equal()
+```
+
+
+```{r}
+result %>% 
+  filter(descriptor %in% c("cp_op_es","mo_op_es","ge_op_es","mo_cp_op_es","ge_mo_cp_op_es")) %>% 
+  filter(assay_id == "280_759") %>% 
+  print
+```
+```{r}
+result %>% 
+  filter(descriptor %in% c("cp_op_es","mo_op_es","ge_op_es","mo_cp_op_es","ge_mo_cp_op_es")) %>% 
+  filter(assay_id == "282_761") %>% 
+  arrange(-auc) %>% 
+  print
+```
+
+# create auc plots 
+```{r}
+# read results  mo_cp_op_es pons
+
+result_vector <-  read_csv("../../../results/scaffold_based/chemprop/predictions/predictions_ge_op_es.csv") %>% 
+  extract2("282_761") 
+
+response_vector <- response %>% extract2("282_761") 
+
+
+roc_curve <- roc(response_vector, result_vector,  , direction = "<", levels = c(0, 1)) 
+
+plot(roc_curve)
+```
+
+# color codes 
+# yellow F1C232 (chemical)
+# blue 6FA8DC (gene expression) 
+# green 93C47C (morphology)
+
+```{r}
+assay_id_to_plot <- "280_759"
+assay_id_to_plot <- "241_715"
+assay_id_to_plot <- "282_761"
+assay_id_to_plot <- "261_739"
+
+
+result_vector_cp <-  read_csv("../../../results/scaffold_based/chemprop/predictions/predictions_cp_op_es.csv")  
+result_vector_mo <-  read_csv("../../../results/scaffold_based/chemprop/predictions/predictions_mo_op_es.csv")  
+result_vector_ge <-  read_csv("../../../results/scaffold_based/chemprop/predictions/predictions_ge_op_es.csv") 
+ 
+test_data <- data.frame(
+  response =  response %>% extract2(assay_id_to_plot), 
+  result_cp = result_vector_cp %>% extract2(assay_id_to_plot),
+  result_mo = result_vector_mo %>% extract2(assay_id_to_plot),
+  result_ge = result_vector_ge %>% extract2(assay_id_to_plot)
+  )
+
+
+longdata <- melt_roc(test_data, "response", c("result_cp", "result_mo","result_ge"))
+
+ggplot(longdata, aes(d = D, m = M, color = name)) + 
+  geom_roc(labels = FALSE, pointsize = 0) + 
+  theme_linedraw() + 
+  coord_fixed() +
+  scale_color_manual(values=c("#F1C232","#6FA8DC","#93C47C")) + 
+  ggtitle( paste0("roc_",assay_id_to_plot,".png")   ) + 
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+    panel.background = element_blank(), axis.line = element_line(colour = "black")) + 
+  theme(text = element_text(size=16)) + 
+  xlab("False Positive Fraction") +
+  ylab("True Positive Fraction")  + 
+  theme(legend.position="none")
+
+save_name <- paste0("roc_singe_descriptor_",assay_id_to_plot,".png")
+ggsave(paste0("../../../analysis/scaffold_based/",save_name))
+
+```
+
+
+```{r}
+assay_id_to_plot <- "280_759"
+assay_id_to_plot <- "241_715"
+assay_id_to_plot <- "282_761"
+assay_id_to_plot <- "261_739"
+
+result_vector_ge_cp <-  read_csv("../../../results/scaffold_based/chemprop/predictions/predictions_ge_cp_op_es.csv")  
+result_vector_ge_mo_cp <-  read_csv("../../../results/scaffold_based/chemprop/predictions/predictions_ge_mo_cp_op_es.csv")  
+result_vector_mo_cp <-  read_csv("../../../results/scaffold_based/chemprop/predictions/predictions_mo_cp_op_es.csv") 
+result_vector_ge_mo <-  read_csv("../../../results/scaffold_based/chemprop/predictions/predictions_ge_mo.csv") 
+ 
+test_data <- data.frame(
+  response =  response %>% extract2(assay_id_to_plot), 
+  result_ge_cp = result_vector_ge_cp %>% extract2(assay_id_to_plot),
+  result_ge_mo_cp = result_vector_ge_mo_cp %>% extract2(assay_id_to_plot),
+  result_mo_cp = result_vector_mo_cp %>% extract2(assay_id_to_plot),
+  result_ge_mo = result_vector_ge_mo %>% extract2(assay_id_to_plot)
+  )
+
+
+longdata <- melt_roc(test_data, "response", c("result_ge_cp", "result_ge_mo_cp","result_mo_cp","result_ge_mo"))
+
+ggplot(longdata, aes(d = D, m = M, color = name)) + 
+  geom_roc(labels = FALSE, pointsize = 0) + 
+  theme_linedraw() + 
+  coord_fixed() +
+  ggtitle( paste0("roc_",assay_id_to_plot,".png")   ) + 
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+    panel.background = element_blank(), axis.line = element_line(colour = "black")) + 
+  theme(text = element_text(size=16)) + 
+  xlab("False Positive Fraction") +
+  ylab("True Positive Fraction") 
+save_name <- paste0("roc_",assay_id_to_plot,".png")
+ggsave(paste0("../../../analysis/scaffold_based/",save_name))
+
+```
+
+
+```{r}
+type <- "mo"
+
+if (type == "cp") { result_vector <-  read_csv("../../../results/scaffold_based/chemprop/predictions/predictions_cp_op_es.csv") } 
+if (type == "mo") { result_vector <-  read_csv("../../../results/scaffold_based/chemprop/predictions/predictions_mo_op_es.csv") } 
+if (type == "ge") { result_vector <-  read_csv("../../../results/scaffold_based/chemprop/predictions/predictions_ge_op_es.csv") } 
+if (type == "cp+mo") { result_vector <-  read_csv("../../../results/scaffold_based/chemprop/predictions/predictions_mo_cp_op_es.csv") } 
+if (type == "cp+ge+mo") { result_vector <-  read_csv("../../../results/scaffold_based/chemprop/predictions/predictions_ge_mo_cp_op_es.csv") } 
+
+result_vector
+
+test <- data.frame(
+  response =  response %>% extract2(assay_id_to_plot), 
+  result = result_vector %>% extract2(assay_id_to_plot)
+)
+
+ggplot(test, aes(m = result, d = response)) + 
+  geom_roc(labels = FALSE) + 
+  theme_linedraw() + 
+  coord_fixed() +
+  ggtitle(paste0(type, ", auc: ", sprintf("%.3f", auc(test$response, test$result)))) + 
+   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+panel.background = element_blank(), axis.line = element_line(colour = "black")) + 
+  theme(text = element_text(size=20))
+
+ggsave(paste0("../../../analysis/scaffold_based/",save_name), width = 4, height = 4)
+
+plot(sort(test$result, decreasing = TRUE),xlab = "compound",ylab = "predicted value", main = type)
+
+png(filename=paste0("../../../analysis/scaffold_based/predicted_values_",type,"_",assay_id_to_plot,"_", sprintf("%.3f", auc(test$response, test$result)),".png"),width = 480, height = 480, units = "px", pointsize = 12,)
+plot(sort(test$result, decreasing = TRUE),xlab = "compound",ylab = "predicted value", main = type)
+
+dev.off()
+```
+```{r}
+
+```
+
+
+# Add columns for ensemble models (true/false) and for optimized models (true/false)
+1. Ensemble models end with _es 
+2. optimized models have an _op in the filename. 
+All ensemble models ending with op_es were created as follows: hyperparmaeter optimization was run using 20 models. The optimal configuration was used to train one final model. This final model and all 20 other models were used in an ensemble model (21 models together) to predict the final results. 
+
+```{r}
+
+is_ensemble <- function(descriptor){
+   !is_empty(str_subset(descriptor,"_es"))
+}
+
+is_optimized <- function(descriptor){
+   !is_empty(str_subset(descriptor,"_op"))
+}
+
+result_annotated <- result %>% 
+  group_by(descriptor) %>% 
+  summarize(assays_total = n(),
+          assays_evaluated = sum(!is.na(auc)),
+          assays_not_evaluated = sum(is.na(auc)),
+          auc_mean = mean(auc, na.rm = TRUE), 
+          auc_70 = sum(auc_70, na.rm = TRUE), 
+          auc_90 = sum(auc_90, na.rm = TRUE)
+          )
+result_annotated %<>% 
+  mutate(ensemble = unlist(lapply(result_annotated$descriptor, is_ensemble))) %>% 
+  mutate(optimized = unlist(lapply(result_annotated$descriptor, is_optimized))) %>% 
+  select(descriptor, optimized, ensemble, everything()) %>% 
+  print
+
+```
+* 14 assays have a auc>90 for all three descriptors 
+* 31 assays have a auc>90 for two descriptors 
+* 49 assays have a auc>90 for one descriptor
+```{r}
+result %>% 
+  filter(auc_90) %>% 
+  group_by(assay_id) %>% 
+  summarise(descriptors_with_auc90 = n()) %>% 
+  group_by(descriptors_with_auc90) %>% 
+  summarise(n_assay = n()) %>% 
+  arrange(n_assay) %>% 
+  print
+```
+
+## how did optimization improve our model?
+```{r}
+ descriptor_list <- c("cp","ge","mo","mo_cp","ge_cp","ge_mo_cp")
+
+improvement_op_auc_mean <- function(string) {
+  return( 
+    result_annotated %>% filter( descriptor == paste0(string,"_op")) %>% extract2("auc_mean") / 
+      result_annotated %>% filter( descriptor == paste0(string)) %>% extract2("auc_mean")
+  )
+}
+
+improvement_es_auc_mean <- function(string) {
+  return( 
+    result_annotated %>% filter( descriptor == paste0(string,"_op_es")) %>% extract2("auc_mean") / 
+      result_annotated %>% filter( descriptor == paste0(string)) %>% extract2("auc_mean")
+  )
+}
+
+improvement_op_auc_90 <- function(string) {
+  return( 
+    result_annotated %>% filter( descriptor == paste0(string,"_op")) %>% extract2("auc_90") / 
+      result_annotated %>% filter( descriptor == paste0(string)) %>% extract2("auc_90")
+  )
+}
+
+improvement_es_auc_90 <- function(string) {
+  return( 
+    result_annotated %>% filter( descriptor == paste0(string,"_op_es")) %>% extract2("auc_90") / 
+      result_annotated %>% filter( descriptor == paste0(string)) %>% extract2("auc_90")
+  )
+}
+
+improvement_df <- tibble(
+  descriptor = descriptor_list,
+  impr_auc_90_opti = lapply(descriptor_list, improvement_op_auc_90) %>% unlist(), 
+  impr_auc_90_ensemble =  lapply(descriptor_list, improvement_es_auc_90) %>% unlist(),
+  impr_auc_mean_opti = lapply(descriptor_list, improvement_op_auc_mean) %>% unlist(), 
+  impr_auc_mean_ensemble =  lapply(descriptor_list, improvement_es_auc_mean) %>% unlist()
+) %>% 
+  print
+  
+```
+
+
+ c("cp_op_es","mo_op_es","ge_op_es","mo_cp_op_es","ge_mo_cp_op_es","ge_mo","ge_cp_op_es")) 
+```{r}
+result %>% 
+  filter(descriptor %in% c("cp_op_es","mo_op_es","ge_op_es")) %>% 
+  mutate(descriptor=replace(descriptor, descriptor=="cp_op_es", "CP")) %>%
+  mutate(descriptor=replace(descriptor, descriptor=="ge_op_es", "GE")) %>%
+  mutate(descriptor=replace(descriptor, descriptor=="mo_op_es", "MO")) %>%
+  mutate(auc_70 = ifelse(is.na(auc_70),FALSE, auc_70)) %>% 
+  select(assay_id, descriptor, auc_70) %>% 
+  spread(.,descriptor, auc_70) %>% 
+  select(-assay_id) %>% 
+  euler(.) %>% 
+  plot(
+    .,
+    quantities = TRUE, 
+    main = "Assays with auc > 0.7 per descriptor",
+    fills = c("#F1C232","#6FA8DC","#93C47C")
+                ) 
+```
+
+```{r}
+result %>% 
+  filter(descriptor %in% c("cp_op_es","mo_op_es","ge_op_es")) %>% 
+  mutate(descriptor=replace(descriptor, descriptor=="cp_op_es", "CP")) %>%
+  mutate(descriptor=replace(descriptor, descriptor=="ge_op_es", "GE")) %>%
+  mutate(descriptor=replace(descriptor, descriptor=="mo_op_es", "MO")) %>%
+  mutate(auc_90 = ifelse(is.na(auc_90),FALSE, auc_90)) %>% 
+  select(assay_id, descriptor, auc_90) %>% 
+  spread(.,descriptor, auc_90) %>% 
+  select(-assay_id) %>% 
+  euler(.) %>% 
+  plot(
+    .,
+    quantities = TRUE, 
+    main = "Assays with auc > 0.9 per descriptor",
+    fills = c("#F1C232","#6FA8DC","#93C47C")
+                ) 
+```
+ c("cp_op_es","mo_op_es","ge_op_es","mo_cp_op_es","ge_mo_cp_op_es","ge_mo","ge_cp_op_es")) 
+ 
+```{r}
+result %>% 
+  filter(descriptor %in% c("mo_cp_op_es","ge_mo_cp_op_es","ge_mo","ge_cp_op_es")) %>% 
+  mutate(descriptor=replace(descriptor, descriptor=="mo_cp_op_es", "CP+MO")) %>%
+  mutate(descriptor=replace(descriptor, descriptor=="ge_mo_cp_op_es", "CP+GE+MO")) %>%
+  mutate(descriptor=replace(descriptor, descriptor=="ge_mo", "GE+MO")) %>%
+  mutate(descriptor=replace(descriptor, descriptor=="ge_cp_op_es", "CP+GE")) %>%
+  mutate(auc_70 = ifelse(is.na(auc_70),FALSE, auc_70)) %>% 
+  select(assay_id, descriptor, auc_70) %>% 
+  spread(.,descriptor, auc_70) %>% 
+  select(-assay_id) %>% 
+  euler(.) %>% 
+  plot(.,
+       quantities = TRUE, 
+       main = "Assays with auc > 0.7 per descriptor",
+       fills = c("#F8766D", "#7CAE00", "#00BFC4","#C77CFF"),
+       edges = TRUE
+       ) 
+```
+
+
+```{r}
+result %>% 
+  filter(descriptor %in% c("mo_cp_op_es","ge_mo_cp_op_es","ge_mo","ge_cp_op_es")) %>% 
+  mutate(descriptor=replace(descriptor, descriptor=="mo_cp_op_es", "CP+MO")) %>%
+  mutate(descriptor=replace(descriptor, descriptor=="ge_mo_cp_op_es", "CP+GE+MO")) %>%
+  mutate(descriptor=replace(descriptor, descriptor=="ge_mo", "GE+MO")) %>%
+  mutate(descriptor=replace(descriptor, descriptor=="ge_cp_op_es", "CP+GE")) %>%
+  mutate(auc_90 = ifelse(is.na(auc_90),FALSE, auc_90)) %>% 
+  select(assay_id, descriptor, auc_90) %>% 
+  spread(.,descriptor, auc_90) %>% 
+  select(-assay_id) %>% 
+  euler(.) %>% 
+  plot(.,
+       quantities = TRUE, 
+       main = "Assays with auc > 0.9 per descriptor",
+       fills = c("#F8766D", "#7CAE00", "#00BFC4","#C77CFF"),
+       edges = TRUE
+       ) 
+```
+
+
+# not used 
+```{}
+result %>% 
+  filter(descriptor %in% c("mo_cp","ge_cp","ge_mo_cp")) %>% 
+  mutate(auc_90 = ifelse(is.na(auc_90),FALSE, auc_90)) %>% 
+  select(assay_id, descriptor, auc_90) %>% 
+  spread(.,descriptor, auc_90) %>% 
+  select(-assay_id) %>% 
+  euler(.) %>% 
+  plot(.,quantities = TRUE, main = "Assays with auc > 0.9 per descriptor") 
+
+result %>% 
+  filter(descriptor %in% c("mo_cp_op_es","mo_op_es","mo_op")) %>% 
+  mutate(auc_90 = ifelse(is.na(auc_90),FALSE, auc_90)) %>% 
+  select(assay_id, descriptor, auc_90) %>% 
+  spread(.,descriptor, auc_90) %>% 
+  select(-assay_id) %>% 
+  euler(.) %>% 
+  plot(.,quantities = TRUE, main = "Assays with auc > 0.9 per descriptor") 
+
+result %>% 
+  filter(descriptor %in% c("mo_cp","ge_cp","ge_mo_cp")) %>% 
+  mutate(auc_90 = ifelse(is.na(auc_90),FALSE, auc_90)) %>% 
+  select(assay_id, descriptor, auc_90) %>% 
+  spread(.,descriptor, auc_90) %>% 
+  select(-assay_id) %>% 
+  euler(.) %>% 
+  plot(.,quantities = TRUE, main = "Assays with auc > 0.9 per descriptor") 
+
+result %>% 
+  filter(descriptor %in% c("mo","mo_2","mo_3")) %>% 
+  mutate(auc_90 = ifelse(is.na(auc_90),FALSE, auc_90)) %>% 
+  select(assay_id, descriptor, auc_90) %>% 
+  spread(.,descriptor, auc_90) %>% 
+  select(-assay_id) %>% 
+  colSums() %>%
+  euler(.) %>% 
+  plot(.,quantities = TRUE, main = "Assays with auc > 0.9 per descriptor") 
+```
+
+# the following code can only be run with access to the assay_metadata.csv
+## assay distribution
+
+
+
+
+# read assay information 
+```{}
+assay_info <- read_csv('../../../analysis/assay_metadata.csv') %>% 
+  group_by(ASSAY_ID, ASSAY_OBS_ID) %>% 
+  slice(1) 
+
+assay_info %<>% 
+  mutate(new_id = paste0(ASSAY_ID,"_", ASSAY_OBS_ID)) %>% print
+```
+
+```{}
+assay_info %>% 
+  group_by(OBS_SOURCE) %>% 
+  summarise(assays_per_source = n())
+
+assay_info %<>% 
+  select(-starts_with("assays_per_")) %>% 
+  left_join(
+    x = .,
+    y = assay_info %>% 
+      group_by(OBS_SOURCE) %>% 
+      summarise(assays_per_source = n()),
+    by = "OBS_SOURCE"
+  )
+
+```
+
+```{}
+summary_per_source <- left_join(
+  x = result %>% filter(auc_90),
+  y = assay_info, 
+  by = c("assay_id" = "new_id")
+) %>% 
+  group_by(descriptor, OBS_SOURCE ) %>% 
+  summarise( auc90_n = n())  %>% 
+  print
+```
+```{}
+summary_per_source %>% left_join(
+  x = ., 
+  y = assay_info %>% 
+      group_by(OBS_SOURCE) %>% 
+      summarise(assays_per_source = n()),
+    by = "OBS_SOURCE"
+)  %>% 
+  mutate(auc90_percent_per_source = auc90_n / assays_per_source) %>% 
+  select(descriptor, OBS_SOURCE, auc90_n, assays_per_source, auc90_percent_per_source, ) %>% 
+  knitr::kable()
+
+```
+
+# legacy - the following code can be used to parse the command line output of train.py if --show_individual_scores is set 
+
+```{}
+read_chemprop_results <- function(result_path){ 
+  read_delim(result_path, delim = " ", col_names = FALSE) %>% 
+    select(X3, X6) %>% 
+    rename("assay_id" = X3, "auc" = X6) %>% 
+    mutate("auc_70" = auc >0.7) %>% 
+    mutate("auc_90" = auc >0.9) %>% 
+      return()
+}
+
+chemprop_results <- rbind(
+  read_chemprop_results('../../../results/scaffold_based_chemprop/results_chemprop.txt') %>% 
+    mutate(descriptor = "cp"),
+  read_chemprop_results('../../../results/scaffold_based_chemprop/results_chemprop_mo.txt') %>% 
+    mutate(descriptor = "cp-mo"),
+  read_chemprop_results('../../../results/scaffold_based_chemprop/results_chemprop_ge.txt') %>% 
+    mutate(descriptor = "cp-ge"),
+  read_chemprop_results('../../../results/scaffold_based_chemprop/results_chemprop_gemo.txt') %>% 
+    mutate(descriptor = "cp-ge-mo")
+)
+ 
+```
+
+
+```{r}
+result %>% 
+  filter(descriptor == "mo") %>%
+  group_by(descriptor) %>% 
+  arrange(-auc) %>% 
+  print
+
+assays_used_in_roc <- result %>% 
+  filter(assay_id %in% c("280_759","241_715","282_761","261_739")) %>% 
+  filter(descriptor %in% c("cp_op_es","mo_op_es","ge_op_es","mo_cp_op_es","ge_mo_cp_op_es","ge_mo","ge_cp_op_es")) %>% 
+  select(assay_id, auc, descriptor,hits, readouts, hit_rate) %>% 
+  print
+```
+
+
+```{r}
+count_auc_70_by_assay_type <- df %>% 
+  filter(descriptor %in% c("cp_op_es","mo_op_es","ge_op_es","mo_cp_op_es","ge_mo_cp_op_es","ge_mo","ge_cp_op_es")) %>% 
+  mutate(descriptor=replace(descriptor, descriptor=="cp_op_es", "CP")) %>%
+  mutate(descriptor=replace(descriptor, descriptor=="ge_op_es", "GE")) %>%
+  mutate(descriptor=replace(descriptor, descriptor=="mo_op_es", "MO")) %>%
+  mutate(descriptor=replace(descriptor, descriptor=="mo_cp_op_es", "CP+MO")) %>%
+  mutate(descriptor=replace(descriptor, descriptor=="ge_mo_cp_op_es", "CP+GE+MO")) %>%
+  mutate(descriptor=replace(descriptor, descriptor=="ge_mo", "GE+MO")) %>%
+  mutate(descriptor=replace(descriptor, descriptor=="ge_cp_op_es", "CP+GE")) %>%
+  filter(auc_70) %>% 
+  group_by(descriptor,ASSAY_TYPE) %>% 
+  summarise(n_auc_70 = n()) %>% 
+  filter(!is.na(ASSAY_TYPE)) %>% 
+  print
+```
+```{r}
+count_auc_70_by_descriptor_and_type <- pivot_wider(
+  count_auc_70_by_assay_type,  
+  names_from = ASSAY_TYPE,
+  values_from = n_auc_70
+  ) %>% print
+
+
+```
+
+
+```{r}
+count_auc_90_by_assay_type <- df %>% 
+  filter(descriptor %in% c("cp_op_es","mo_op_es","ge_op_es","mo_cp_op_es","ge_mo_cp_op_es","ge_mo","ge_cp_op_es")) %>% 
+  mutate(descriptor=replace(descriptor, descriptor=="cp_op_es", "CP")) %>%
+  mutate(descriptor=replace(descriptor, descriptor=="ge_op_es", "GE")) %>%
+  mutate(descriptor=replace(descriptor, descriptor=="mo_op_es", "MO")) %>%
+  mutate(descriptor=replace(descriptor, descriptor=="mo_cp_op_es", "CP+MO")) %>%
+  mutate(descriptor=replace(descriptor, descriptor=="ge_mo_cp_op_es", "CP+GE+MO")) %>%
+  mutate(descriptor=replace(descriptor, descriptor=="ge_mo", "GE+MO")) %>%
+  mutate(descriptor=replace(descriptor, descriptor=="ge_cp_op_es", "CP+GE")) %>%
+  filter(auc_90) %>% 
+  group_by(descriptor,ASSAY_TYPE) %>% 
+  summarise(n_auc_90 = n()) %>% 
+  filter(!is.na(ASSAY_TYPE)) 
+
+count_auc_90_by_descriptor_and_type <- pivot_wider(
+  count_auc_90_by_assay_type,  
+  names_from = ASSAY_TYPE,
+  values_from = n_auc_90
+  ) %>% print
+
+```
+
+```{r}
+result_auc_summary <- result %>% 
+  filter(descriptor %in% c("cp_op_es","mo_op_es","ge_op_es","mo_cp_op_es","ge_mo_cp_op_es","ge_mo","ge_cp_op_es")) %>% 
+  mutate(descriptor=replace(descriptor, descriptor=="cp_op_es", "CP")) %>%
+  mutate(descriptor=replace(descriptor, descriptor=="ge_op_es", "GE")) %>%
+  mutate(descriptor=replace(descriptor, descriptor=="mo_op_es", "MO")) %>%
+  mutate(descriptor=replace(descriptor, descriptor=="mo_cp_op_es", "CP+MO")) %>%
+  mutate(descriptor=replace(descriptor, descriptor=="ge_mo_cp_op_es", "CP+GE+MO")) %>%
+  mutate(descriptor=replace(descriptor, descriptor=="ge_mo", "GE+MO")) %>%
+  mutate(descriptor=replace(descriptor, descriptor=="ge_cp_op_es", "CP+GE")) %>%
+  group_by(descriptor) %>% 
+  summarise(
+    "Mean AUC" = mean(auc, na.rm = TRUE), 
+    "AUC > 0.7" = sum(auc_70, na.rm = TRUE),
+    "AUC > 0.9" = sum(auc_90, na.rm = TRUE)
+    )
+
+
+result %>% arrange(-auc) %>% 
+  filter(descriptor %in% c("cp_op_es","mo_op_es","ge_op_es","mo_cp_op_es","ge_mo_cp_op_es","ge_mo","ge_cp_op_es")) %>% 
+  mutate(descriptor=replace(descriptor, descriptor=="cp_op_es", "CP")) %>%
+  mutate(descriptor=replace(descriptor, descriptor=="ge_op_es", "GE")) %>%
+  mutate(descriptor=replace(descriptor, descriptor=="mo_op_es", "MO")) %>%
+  mutate(descriptor=replace(descriptor, descriptor=="mo_cp_op_es", "CP+MO")) %>%
+  mutate(descriptor=replace(descriptor, descriptor=="ge_mo_cp_op_es", "CP+GE+MO")) %>%
+  mutate(descriptor=replace(descriptor, descriptor=="ge_mo", "GE+MO")) %>%
+  mutate(descriptor=replace(descriptor, descriptor=="ge_cp_op_es", "CP+GE")) %>%
+  select(assay_id, auc, descriptor, hits, everything()) %>% 
+  filter(!is.na(readouts) ) %>% 
+  write_csv("~/tmp.csv")
+
+df_temp <- result %>% arrange(-auc) %>% 
+  filter(descriptor %in% c("cp_op_es","mo_op_es","ge_op_es","mo_cp_op_es","ge_mo_cp_op_es","ge_mo","ge_cp_op_es")) %>% 
+  mutate(descriptor=replace(descriptor, descriptor=="cp_op_es", "CP")) %>%
+  mutate(descriptor=replace(descriptor, descriptor=="ge_op_es", "GE")) %>%
+  mutate(descriptor=replace(descriptor, descriptor=="mo_op_es", "MO")) %>%
+  mutate(descriptor=replace(descriptor, descriptor=="mo_cp_op_es", "CP+MO")) %>%
+  mutate(descriptor=replace(descriptor, descriptor=="ge_mo_cp_op_es", "CP+GE+MO")) %>%
+  mutate(descriptor=replace(descriptor, descriptor=="ge_mo", "GE+MO")) %>%
+  mutate(descriptor=replace(descriptor, descriptor=="ge_cp_op_es", "CP+GE")) %>%
+  select(assay_id, auc, descriptor, hits, everything()) %>% 
+  group_by(assay_id) %>% 
+  summarise(mean_auc = mean(auc), hits = mean(hits), readouts = mean(readouts), hit_rate = mean(hit_rate)) %>% 
+  filter(!is.na(readouts) ) %>% 
+  print
+
+
+```

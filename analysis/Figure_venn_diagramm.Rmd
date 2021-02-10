@@ -1,0 +1,453 @@
+---
+title: "read_chemprop_predictions"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+http://ec2-52-90-145-233.compute-1.amazonaws.com:9100/hub/login
+
+
+```{r}
+library(tidyverse)
+library(magrittr)
+library(eulerr)
+```
+
+## 
+```{r}
+# result <- read_csv("../../../results/scaffold_based/chemprop/2020_07_evaluation.csv")
+result <- read_csv("../results/2020_07_evaluation.csv")
+
+# result_late_fusion <- read_csv("../../../results/scaffold_based/chemprop/2020_07_evaluation_late_fusion.csv")
+result_late_fusion <- read_csv("../results/2020_07_evaluation_late_fusion.csv")
+
+result <- rbind(result, result_late_fusion)
+
+result %>% filter(assay_id %in% c("280_759","241_715","282_761","261_739")) %>% group_by(assay_id) %>% slice(1)
+```
+
+```{r}
+metadata <- read_csv("../data/assay_metadata.csv") %>% 
+  print
+
+metadata %>% 
+  filter(ASSAY_ID %in% c("280","241","282","261")) %>% 
+filter(ASSAY_OBS_ID %in% c("759","715","761","739")) %>% 
+  group_by(ASSAY_ID) %>% 
+  slice(1)
+  
+
+
+```
+
+
+```{r}
+plot(result$auc, result$readouts)
+```
+
+
+```{r}
+result %>% group_by(descriptor) %>% slice(1) %>% print
+
+result %>% 
+  filter(descriptor %in% c("CS","GE","MO")) %>% 
+  mutate(auc_70 = ifelse(is.na(auc_70),FALSE, auc_70)) %>% 
+  select(assay_id, descriptor, auc_70) %>% 
+  spread(.,descriptor, auc_70) %>% 
+  select(-assay_id) %>% 
+  euler(.) %>% 
+  plot(
+    .,
+    #quantities = TRUE, 
+    main = "Assays with auc > 0.7 per descriptor",
+    fills = c("#F1C232","#6FA8DC","#93C47C"),
+    labels = list(cex = 5),
+    quantities = list(cex = 5),
+                )
+
+
+
+save_name <- paste0("../figures/","venn_auc_70_single_predictors.png")
+
+png(
+  filename=save_name,
+  width = 640, 
+  height = 640, 
+  units = "px", 
+  pointsize = 120
+  )
+
+result %>% 
+  filter(descriptor %in% c("CS","GE","MO")) %>% 
+  mutate(auc_70 = ifelse(is.na(auc_70),FALSE, auc_70)) %>% 
+  select(assay_id, descriptor, auc_70) %>% 
+  spread(.,descriptor, auc_70) %>% 
+  select(-assay_id) %>% 
+  euler(.) %>% 
+  plot(
+    .,
+    labels = 0,
+    quantities = list(cex = 5),
+    main = "Assays with auc > 0.7 per descriptor",
+    fills = c("#F1C232","#6FA8DC","#93C47C")
+                )
+
+dev.off()
+
+
+
+```
+
+```{r}
+
+result %>% 
+  filter(descriptor %in% c("CS","GE","MO")) %>% 
+  mutate(auc_90 = ifelse(is.na(auc_90),FALSE, auc_90)) %>% 
+  select(assay_id, descriptor, auc_90) %>% 
+  spread(.,descriptor, auc_90) %>% 
+  select(-assay_id) %>% 
+  euler(.) %>% 
+  plot(
+    .,
+    labels = 0,
+    quantities = list(cex = 5),
+    main = "Assays with auc > 0.9 per descriptor",
+    fills = c("#F1C232","#6FA8DC","#93C47C")
+  ) 
+
+# save_name <- paste0("../../../analysis/scaffold_based/figures/","venn_auc_90_single_predictors.png")
+save_name <- paste0("../figures/","venn_auc_90_single_predictors.png")
+
+png(
+  filename=save_name,
+  width = 480, 
+  height = 480, 
+  units = "px", 
+  pointsize = 12
+  )
+
+result %>% 
+  filter(descriptor %in% c("CS","GE","MO")) %>% 
+  mutate(auc_90 = ifelse(is.na(auc_90),FALSE, auc_90)) %>% 
+  select(assay_id, descriptor, auc_90) %>% 
+  spread(.,descriptor, auc_90) %>% 
+  select(-assay_id) %>% 
+  euler(.) %>% 
+  plot(
+    .,
+    labels = 0,
+    quantities = list(cex = 5),
+    main = "Assays with auc > 0.9 per descriptor",
+    fills = c("#F1C232","#6FA8DC","#93C47C")
+  ) 
+dev.off()
+
+
+```
+```{r}
+result %>% 
+  filter(descriptor %in% c("CS+GE","CS+MO","GE+MO","CS+GE+MO")) %>% 
+  mutate(descriptor=replace(descriptor, descriptor=="mo_cp_op_es", "CS+MO")) %>%
+  mutate(descriptor=replace(descriptor, descriptor=="ge_mo_cp_op_es", "CS+GE+MO")) %>%
+  mutate(descriptor=replace(descriptor, descriptor=="ge_mo", "GE+MO")) %>%
+  mutate(descriptor=replace(descriptor, descriptor=="ge_cp_op_es", "CS+GE")) %>%
+  mutate(auc_70 = ifelse(is.na(auc_70),FALSE, auc_70)) %>% 
+  select(assay_id, descriptor, auc_70) %>% 
+  spread(.,descriptor, auc_70) %>% 
+  select(-assay_id) %>% 
+  euler(.) %>% 
+  plot(.,
+      labels = 0,
+      quantities = list(cex = 5),
+       main = "Assays with auc > 0.7 per descriptor",
+       fills = c("#F8766D", "#7CAE00", "#00BFC4","#C77CFF"),
+       edges = TRUE
+       ) 
+
+
+
+# save_name <- paste0("../../../analysis/scaffold_based/figures/","venn_auc_70_combined_predictors.png")
+save_name <- paste0("../figures/","venn_auc_70_combined_predictors.png")
+
+png(
+  filename=save_name,
+  width = 480, 
+  height = 480, 
+  units = "px", 
+  pointsize = 12
+  )
+
+result %>% 
+  filter(descriptor %in% c("CS+GE","CS+MO","GE+MO","CS+GE+MO")) %>% 
+  mutate(descriptor=replace(descriptor, descriptor=="mo_cp_op_es", "CS+MO")) %>%
+  mutate(descriptor=replace(descriptor, descriptor=="ge_mo_cp_op_es", "CS+GE+MO")) %>%
+  mutate(descriptor=replace(descriptor, descriptor=="ge_mo", "GE+MO")) %>%
+  mutate(descriptor=replace(descriptor, descriptor=="ge_cp_op_es", "CS+GE")) %>%
+  mutate(auc_70 = ifelse(is.na(auc_70),FALSE, auc_70)) %>% 
+  select(assay_id, descriptor, auc_70) %>% 
+  spread(.,descriptor, auc_70) %>% 
+  select(-assay_id) %>% 
+  euler(.) %>% 
+  plot(.,
+        labels = 0,
+        quantities = list(cex = 5),
+        main = "Assays with auc > 0.7 per descriptor",
+        fills = c("#F8766D", "#7CAE00", "#00BFC4","#C77CFF"),
+        edges = TRUE
+       ) 
+
+dev.off()
+
+
+
+```
+# 
+```{r}
+result %>% 
+  filter(descriptor %in% c("CS+GE","CS+MO","GE+MO","CS+GE+MO")) %>% 
+  mutate(auc_90 = ifelse(is.na(auc_90),FALSE, auc_90)) %>% 
+  select(assay_id, descriptor, auc_90) %>% 
+  spread(.,descriptor, auc_90) %>% 
+  select(-assay_id) %>% 
+  euler(.) %>% 
+  plot(.,
+        labels = 0,
+        quantities = list(cex = 5),
+       main = "Assays with auc > 0.9 per descriptor",
+       fills = c("#F8766D", "#7CAE00", "#00BFC4","#C77CFF"),
+       edges = TRUE
+       ) 
+
+
+# save_name <- paste0("../../../analysis/scaffold_based/figures/","venn_auc_90_combined_predictors.png")
+save_name <- paste0("../figures/","venn_auc_90_combined_predictors.png")
+
+png(
+  filename=save_name,
+  width = 480, 
+  height = 480, 
+  units = "px", 
+  pointsize = 12
+  )
+
+result %>% 
+  filter(descriptor %in% c("CS+GE","CS+MO","GE+MO","CS+GE+MO")) %>% 
+  mutate(auc_90 = ifelse(is.na(auc_90),FALSE, auc_90)) %>% 
+  select(assay_id, descriptor, auc_90) %>% 
+  spread(.,descriptor, auc_90) %>% 
+  select(-assay_id) %>% 
+  euler(.) %>% 
+  plot(.,
+        labels = 0,
+    quantities = list(cex = 5),
+       main = "Assays with auc > 0.9 per descriptor",
+       fills = c("#F8766D", "#7CAE00", "#00BFC4","#C77CFF"),
+       edges = TRUE
+       ) 
+
+dev.off()
+
+
+
+```
+
+
+# late fusion max 
+```{r}
+result %>% 
+  filter(descriptor %in% c("max CS+GE","max CS+MO","max GE+MO","max CS+GE+MO")) %>% 
+  mutate(auc_90 = ifelse(is.na(auc_90),FALSE, auc_90)) %>% 
+  select(assay_id, descriptor, auc_90) %>% 
+  spread(.,descriptor, auc_90) %>% 
+  select(-assay_id) %>% 
+  euler(.) %>% 
+  plot(.,
+        labels = 0,
+    quantities = list(cex = 5),
+       main = "Assays with auc > 0.9 per descriptor",
+       fills = c("#F8766D", "#7CAE00", "#00BFC4","#C77CFF"),
+       edges = TRUE
+       ) 
+
+
+# save_name <- paste0("../../../analysis/scaffold_based/figures/","venn_auc_90_combined_max_fusion_predictors.png")
+save_name <- paste0("../figures/","venn_auc_90_combined_max_fusion_predictors.png")
+
+png(
+  filename=save_name,
+  width = 480, 
+  height = 480, 
+  units = "px", 
+  pointsize = 12
+  )
+
+result %>% 
+  filter(descriptor %in% c("max CS+GE","max CS+MO","max GE+MO","max CS+GE+MO")) %>% 
+  mutate(auc_90 = ifelse(is.na(auc_90),FALSE, auc_90)) %>% 
+  select(assay_id, descriptor, auc_90) %>% 
+  spread(.,descriptor, auc_90) %>% 
+  select(-assay_id) %>% 
+  euler(.) %>% 
+  plot(.,
+        labels = 0,
+    quantities = list(cex = 5), 
+       main = "Assays with auc > 0.9 per descriptor",
+       fills = c("#F8766D", "#7CAE00", "#00BFC4","#C77CFF"),
+       edges = TRUE
+       ) 
+
+dev.off()
+
+
+
+```
+
+
+# late fusion max 
+```{r}
+result %>% 
+  filter(descriptor %in% c("max CS+GE","max CS+MO","max GE+MO","max CS+GE+MO")) %>% 
+  mutate(auc_70 = ifelse(is.na(auc_70),FALSE, auc_70)) %>% 
+  select(assay_id, descriptor, auc_70) %>% 
+  spread(.,descriptor, auc_70) %>% 
+  select(-assay_id) %>% 
+  euler(.) %>% 
+  plot(.,
+       quantities = TRUE, 
+       main = "Assays with auc > 0.7 per descriptor",
+       fills = c("#F8766D", "#7CAE00", "#00BFC4","#C77CFF"),
+       edges = TRUE
+       ) 
+
+
+# save_name <- paste0("../../../analysis/scaffold_based/figures/","venn_auc_70_combined_max_fusion_predictors.png")
+save_name <- paste0("../figures/","venn_auc_70_combined_max_fusion_predictors.png")
+
+png(
+  filename=save_name,
+  width = 480, 
+  height = 480, 
+  units = "px", 
+  pointsize = 12
+  )
+
+result %>% 
+  filter(descriptor %in% c("max CS+GE","max CS+MO","max GE+MO","max CS+GE+MO")) %>% 
+  mutate(auc_70 = ifelse(is.na(auc_70),FALSE, auc_70)) %>% 
+  select(assay_id, descriptor, auc_70) %>% 
+  spread(.,descriptor, auc_70) %>% 
+  select(-assay_id) %>% 
+  euler(.) %>% 
+  plot(.,
+       quantities = TRUE, 
+       main = "Assays with auc > 0.7 per descriptor",
+       fills = c("#F8766D", "#7CAE00", "#00BFC4","#C77CFF"),
+       edges = TRUE
+       ) 
+
+dev.off()
+
+
+
+```
+
+
+
+# late fusion mean
+```{r}
+result %>% 
+  filter(descriptor %in% c("mean CS+GE","mean CS+MO","mean GE+MO","mean CS+GE+MO")) %>% 
+  mutate(auc_90 = ifelse(is.na(auc_90),FALSE, auc_90)) %>% 
+  select(assay_id, descriptor, auc_90) %>% 
+  spread(.,descriptor, auc_90) %>% 
+  select(-assay_id) %>% 
+  euler(.) %>% 
+  plot(.,
+       quantities = TRUE, 
+       main = "Assays with auc > 0.9 per descriptor",
+       fills = c("#F8766D", "#7CAE00", "#00BFC4","#C77CFF"),
+       edges = TRUE
+       ) 
+
+
+# save_name <- paste0("../../../analysis/scaffold_based/figures/","venn_auc_90_combined_mean_fusion_predictors.png")
+save_name <- paste0("../figures/","venn_auc_90_combined_mean_fusion_predictors.png")
+
+png(
+  filename=save_name,
+  width = 480, 
+  height = 480, 
+  units = "px", 
+  pointsize = 12
+  )
+
+result %>% 
+    filter(descriptor %in% c("mean CS+GE","mean CS+MO","mean GE+MO","mean CS+GE+MO")) %>% 
+  mutate(auc_90 = ifelse(is.na(auc_90),FALSE, auc_90)) %>% 
+  select(assay_id, descriptor, auc_90) %>% 
+  spread(.,descriptor, auc_90) %>% 
+  select(-assay_id) %>% 
+  euler(.) %>% 
+  plot(.,
+       quantities = TRUE, 
+       main = "Assays with auc > 0.9 per descriptor",
+       fills = c("#F8766D", "#7CAE00", "#00BFC4","#C77CFF"),
+       edges = TRUE
+       ) 
+
+dev.off()
+
+
+
+```
+
+
+# late fusion mean 
+```{r}
+result %>% 
+  filter(descriptor %in% c("mean CS+GE","mean CS+MO","mean GE+MO","mean CS+GE+MO")) %>% 
+  mutate(auc_70 = ifelse(is.na(auc_70),FALSE, auc_70)) %>% 
+  select(assay_id, descriptor, auc_70) %>% 
+  spread(.,descriptor, auc_70) %>% 
+  select(-assay_id) %>% 
+  euler(.) %>% 
+  plot(.,
+       quantities = TRUE, 
+       main = "Assays with auc > 0.7 per descriptor",
+       fills = c("#F8766D", "#7CAE00", "#00BFC4","#C77CFF"),
+       edges = TRUE
+       ) 
+
+
+# save_name <- paste0("../../../analysis/scaffold_based/figures/","venn_auc_70_combined_mean_fusion_predictors.png")
+
+png(
+  filename=save_name,
+  width = 480, 
+  height = 480, 
+  units = "px", 
+  pointsize = 12
+  )
+
+result %>% 
+  filter(descriptor %in% c("mean CS+GE","mean CS+MO","mean GE+MO","mean CS+GE+MO")) %>% 
+  mutate(auc_70 = ifelse(is.na(auc_70),FALSE, auc_70)) %>% 
+  select(assay_id, descriptor, auc_70) %>% 
+  spread(.,descriptor, auc_70) %>% 
+  select(-assay_id) %>% 
+  euler(.) %>% 
+  plot(.,
+       quantities = TRUE, 
+       main = "Assays with auc > 0.7 per descriptor",
+       fills = c("#F8766D", "#7CAE00", "#00BFC4","#C77CFF"),
+       edges = TRUE
+       ) 
+
+dev.off()
+
+
+
+```
