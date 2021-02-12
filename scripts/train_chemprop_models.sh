@@ -57,7 +57,7 @@ mkdir $output_folder/models/2019-11-cp-op
 
 ## hyperparameter optimization
 CUDA_VISIBLE_DEVICES=3 python hyperparameter_optimization.py \
---data_path $output_folder/assay_matrix_discrete_train_scaff.csv \
+--data_path $input_folder/assay_matrix_discrete_train_scaff.csv \
 --split_sizes 0.8 0.1 0.1 \
 --dataset_type classification \
 --save_dir $output_folder/2019-11-cp-op \
@@ -102,7 +102,6 @@ python predict.py --test_path $input_folder/assay_matrix_discrete_test_scaff.csv
  --no_features_scaling \
  --checkpoint_dir  $output_folder/models/2019-11-mo \
  --preds_path $output_folder/predictions/predictions_mo.csv \
- --features_only 
 
 
 # Train and evaluate a ChemProp model based on genetic features alone 
