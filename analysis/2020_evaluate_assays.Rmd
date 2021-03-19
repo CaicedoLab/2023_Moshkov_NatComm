@@ -40,7 +40,7 @@ For each assay we calculate
 2. hits  
 3. hitrate 
 ```{r}
-response_train <- read_csv('../data/assay_matrix_discrete_train_old_scaff.csv')
+response_train <- read.csv('../predictions/assay_matrix_discrete_train_old_scaff.csv', check.names = F)
 
 values_per_assay_train <- response_train %>% 
   select(-Metadata_broad_sample_simple) %>% 
@@ -109,7 +109,7 @@ For each assay we calculate
 3. hitrate 
 ```{r}
 # response <- read_csv('../../../analysis/scaffold_based/assay_matrix_discrete_test_old_scaff.csv')
-response <- read_csv('../data/assay_matrix_discrete_test_old_scaff.csv')  
+response <- read.csv('../predictions/assay_matrix_discrete_test_old_scaff.csv', check.names = F)  
 
 values_per_assay <- response %>% 
   select(-Metadata_broad_sample_simple) %>% 
@@ -202,18 +202,9 @@ The results are stored separately for each predictor and sequetially read, evlua
 # helper function to catch test data without hits (only 0 or NA values)
 auc_with_na <- function(response, result){
   ifelse(
-    max(response >0, na.rm = TRUE) == 0,
+    all(is.na(response)) | max(response >0, na.rm = TRUE) == 0 | max(response <1, na.rm = TRUE) == 0,
     return(NA), 
     auc(response, result, direction = "<", levels = c(0, 1))
-  )
-} 
-
-# helper function to catch test data without hits (only 0 or NA values)
-prauc_with_na <- function(response, result){
-  ifelse(
-    max(response >0, na.rm = TRUE) == 0,
-    return(NA), 
-    pr.curve(response, result, direction = "<", levels = c(0, 1))
   )
 } 
 
@@ -229,17 +220,20 @@ evaluate_chemprop <- function(path_prediction) {
       ),
     descriptor = descriptor
   )
-} 
+}
+  
 ```
+
 
 ## sequentially read and evaluate predictions 
 ```{r}
 #file_list <- list.files('../../../results/scaffold_based/chemprop/predictions', pattern = "*.csv", full.names = TRUE)
-file_list <- list.files('../predictions/', pattern = "*.csv", full.names = TRUE) 
+file_list <- list.files('../predictions/predictions/', pattern = "*.csv", full.names = TRUE) 
 
 result <- do.call(rbind, lapply(file_list, evaluate_chemprop)) %>% 
-  mutate("auc_70" = auc >0.7) %>% 
-  mutate("auc_90" = auc >0.9) 
+  mutate("auc_70" = round(auc, 12) >0.7) %>% 
+  mutate("auc_90" = round(auc, 12) >0.9) 
+
 ```
 
 ## add readout count, number of hits and hit rate 
@@ -281,12 +275,13 @@ result_analyzed <- result_annotated %>%
 
 ## write all assays as csv 
 ```{r}
+result_annotated$auc <- round(result_annotated$auc, digits = 12)
 # all results 
 # result_annotated %>% write_csv("../../../results/scaffold_based/chemprop/2020_07_evaluation_all_data.csv")
-result_annotated %>% write_csv("../results/2020_07_evaluation_all_data.csv")
+result_annotated %>% write_csv("../predictions/2021_03_evaluation_all_data.csv")
 # results relevant  for analysis
 # result_analyzed %>% write_csv("../../../results/scaffold_based/chemprop/2020_07_evaluation.csv")
-result_analyzed %>% write_csv("../results/2020_07_evaluation.csv")
+result_analyzed %>% write_csv("../predictions/2021_03_evaluation.csv")
 ```
 ## Summary of predictor using AUC
 ```{r}
@@ -295,7 +290,7 @@ result %>%
   summarize(assays_total = n(),
           assays_evaluated = sum(!is.na(auc)),
           assays_not_evaluated = sum(is.na(auc)),
-          auc_mean = mean(auc, na.rm = TRUE), 
+          auc_mean = mean(auc, na.rm = TRUE),
           auc_70 = sum(auc_70, na.rm = TRUE), 
           auc_90 = sum(auc_90, na.rm = TRUE)
           ) %>% 
