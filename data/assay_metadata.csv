@@ -1,0 +1,271 @@
+PUMA_ASSAY_ID,ASSAY_NAME,OBS_NAME,OBS_SOURCE,ASSAY_TYPE,READOUT_TYPE
+1_1,AmyloidFormation.Absorb.AB42,BL21-DE3,ChemBank,bacterial,absorbance
+10_19,BacterialViability.FluorProt.485/538,BCG.JP15,ChemBank,bacterial,fluorescence
+10_20,BacterialViability.FluorProt.485/538,MTB.puv3583c,ChemBank,bacterial,fluorescence
+100_277,KRasSyntheticLethality.Lumin.CTG,MEF285.48h,ChemBank,cell,Luminescence
+100_278,KRasSyntheticLethality.Lumin.CTG,MEF331.48h,ChemBank,cell,Luminescence
+104_289,MODYCellProfiling.FluorDye.Resazurin,B0013._Basal.48h,ChemBank,cell,luminescence
+104_291,MODYCellProfiling.FluorDye.Resazurin,B0018._Basal.48h,ChemBank,cell,luminescence
+104_295,MODYCellProfiling.FluorDye.Resazurin,B10036._Basal.24h,ChemBank,cell,luminescence
+104_297,MODYCellProfiling.FluorDye.Resazurin,B11452._Basal.24h,ChemBank,cell,luminescence
+104_299,MODYCellProfiling.FluorDye.Resazurin,B11493._Basal.24h,ChemBank,cell,luminescence
+104_300,MODYCellProfiling.FluorDye.Resazurin,B11493._Basal.48h,ChemBank,cell,luminescence
+104_319,MODYCellProfiling.FluorDye.Resazurin,B8008._Basal.24h,ChemBank,cell,luminescence
+104_323,MODYCellProfiling.FluorDye.Resazurin,B8107._Basal.24h,ChemBank,cell,luminescence
+104_325,MODYCellProfiling.FluorDye.Resazurin,B8392._Basal.24h,ChemBank,cell,luminescence
+104_326,MODYCellProfiling.FluorDye.Resazurin,B8392._Basal.48h,ChemBank,cell,luminescence
+104_334,MODYCellProfiling.FluorDye.Resazurin,F1497._Basal.24h,ChemBank,cell,luminescence
+105_339,MODYCellProfiling.Lumin.CTG,B0013._Basal.48h,ChemBank,cell,luminescence
+105_341,MODYCellProfiling.Lumin.CTG,B0014._Basal.48h,ChemBank,cell,luminescence
+105_352,MODYCellProfiling.Lumin.CTG,B11452._Basal.48h,ChemBank,cell,luminescence
+105_355,MODYCellProfiling.Lumin.CTG,B11494._Basal.24h,ChemBank,cell,luminescence
+105_360,MODYCellProfiling.Lumin.CTG,B1242._Basal.48h,ChemBank,cell,luminescence
+105_361,MODYCellProfiling.Lumin.CTG,B1243._Basal.24h,ChemBank,cell,luminescence
+105_362,MODYCellProfiling.Lumin.CTG,B1243._Basal.48h,ChemBank,cell,luminescence
+105_369,MODYCellProfiling.Lumin.CTG,B1498._Basal.24h,ChemBank,cell,luminescence
+105_374,MODYCellProfiling.Lumin.CTG,B8008._Basal.48h,ChemBank,cell,luminescence
+105_375,MODYCellProfiling.Lumin.CTG,B8106._Basal.24h,ChemBank,cell,luminescence
+105_377,MODYCellProfiling.Lumin.CTG,B8107._Basal.24h,ChemBank,cell,luminescence
+105_378,MODYCellProfiling.Lumin.CTG,B8107._Basal.48h,ChemBank,cell,luminescence
+105_382,MODYCellProfiling.Lumin.CTG,B8393._Basal.48h,ChemBank,cell,luminescence
+105_385,MODYCellProfiling.Lumin.CTG,F1122._Basal.24h,ChemBank,cell,luminescence
+105_391,MODYCellProfiling.Lumin.CTG,F4422._Basal.24h,ChemBank,cell,luminescence
+106_392,MTBInhibition.FluorProt.GFP,BG1,ChemBank,cell,fluorescence
+108_394,MTBMacrophage.Lumin.CTG;GFP;DAPI,TIB-67;MTB,ChemBank,cell,Luminescence
+109_395,MTBMacrophage.Lumin.Lux-FF,TIB-67;MTB,ChemBank,cell,Luminescence
+11_21,BacterialViability.Lumin.BTG,DRC39.deltaAcrAB,ChemBank,bacterial,BactTiterGlo bacteria viability assay
+11_22,BacterialViability.Lumin.BTG,SaureusR,ChemBank,bacterial,BactTiterGlo bacteria viability assay
+110_396,NOXFamilySignaling.FluorDye.AmplexRed,EBVLymph.PMA,ChemBank,cell,Fluoresence
+110_397,NOXFamilySignaling.FluorDye.AmplexRed,HEK293.NOX1,ChemBank,cell,fluorescence
+110_398,NOXFamilySignaling.FluorDye.AmplexRed,HEK293.NOX2,ChemBank,cell,fluorescence
+110_399,NOXFamilySignaling.FluorDye.AmplexRed,HEK293.NOX4,ChemBank,cell,fluorescence
+110_400,NOXFamilySignaling.FluorDye.AmplexRed,HEK293.NOX5,ChemBank,cell,fluorescence
+110_401,NOXFamilySignaling.FluorDye.AmplexRed,XanOx.Xanth,ChemBank,cell,fluorescence
+111_402,NOXFamilySignaling.Lumin.CTG,HEK293.NOX4.24h,ChemBank,cell,luminescence
+112_406,p53GeneExpression.Reporter.Lux-CDIP,U2OS,ChemBank,cell,LuxReporter
+113_407,p53GeneExpression.Reporter.Lux-RhoE,U2OS,ChemBank,cell,LuxReporter
+114_408,PGC1Expression.Lumin.BrGloLux,COS-7,ChemBank,cell,LuxReporter
+115_409,PGC1Expression.QPCR.SybrGreen,3T3-F442A,ChemBank,cell,qPCR
+116_411,Phosphodiesterase.Absorb.600,CHP1098.20000.1.0x5-FOA,ChemBank,yeast,absorbance
+116_412,Phosphodiesterase.Absorb.600,CHP1113.02500.1.0x5-FOA,ChemBank,yeast,absorbance
+116_413,Phosphodiesterase.Absorb.600,CHP1122.10000.1.0x5-FOA,ChemBank,yeast,absorbance
+116_414,Phosphodiesterase.Absorb.600,CHP1126.10000.1.0x5-FOA,ChemBank,yeast,absorbance
+116_415,Phosphodiesterase.Absorb.600,CHP1128.10000.1.0x5-FOA,ChemBank,yeast,absorbance
+116_416,Phosphodiesterase.Absorb.600,CHP1132.07500.1.0x5-FOA,ChemBank,yeast,absorbance
+116_420,Phosphodiesterase.Absorb.600,CHP1155.03750.1.0x5-FOA,ChemBank,yeast,absorbance
+116_421,Phosphodiesterase.Absorb.600,CHP1156.10000.1.0x5-FOA,ChemBank,yeast,absorbance
+116_424,Phosphodiesterase.Absorb.600,CHP1186.07500.1.0x5-FOA,ChemBank,yeast,absorbance
+116_425,Phosphodiesterase.Absorb.600,CHP1189.05000.1.0x5-FOA,ChemBank,yeast,absorbance
+116_426,Phosphodiesterase.Absorb.600,CHP932.05000.1.0x5-FOA,ChemBank,yeast,absorbance
+116_427,Phosphodiesterase.Absorb.600,LWP369.02500.1.0x5-FOA,ChemBank,yeast,absorbance
+117_429,PI3K/mTORModulation.FluorDye.Resazurin,U251,ChemBank,cell,fluorescence
+117_430,PI3K/mTORModulation.FluorDye.Resazurin,U251.Rap,ChemBank,cell,fluorescence
+118_432,PI3KinaseSignaling.Absorb.600,BY4742._Basal.72h,ChemBank,yeast,absorbance
+118_434,PI3KinaseSignaling.Absorb.600,BY4742.H2O2.72h,ChemBank,yeast,luminescence
+12_23,BetaCateninSignaling.FluorDye.InOutDiff,HTB-96.bCAT-EGFP,ChemBank,cell,fluorescence
+13_24,BetaCateninSignaling.FluorDye.InOutRatio,HTB-96.bCAT-EGFP,ChemBank,cell,fluorescence
+133_474,ProteinDegradation.FluorProt.LC3-VesAvgArea,LN229,ChemBank,cell,Cell count
+134_476,ProteinDegradation.FluorProt.LC3-VesAvgInt,H1299,ChemBank,cell,FluorProtein
+134_477,ProteinDegradation.FluorProt.LC3-VesAvgInt,LN229,ChemBank,cell,fluorescence
+135_479,ProteinDegradation.FluorProt.LC3-VesCt,H1299,ChemBank,cell,fluorescence
+14_25,BetaCateninSignaling.FluorDye.PercentGFPPos,HTB-96.bCAT-EGFP,ChemBank,cell,fluorescence
+143_495,PTK2Inhibition.Lumin.KinGlo,PTK2.polyK4345,ChemBank,biochem,luminescence
+145_497,SplicosomeRegulation.Reporter.Lux-Splice,HEK293.Splice+/-.20m,ChemBank,cell,LuxReporter
+15_26,BetaCateninSignaling.FluorDye.PosCellsW2_Int,HTB-96.bCAT-EGFP,ChemBank,cell,fluorescence
+153_510,StemCellDifferentiation.ImmFluor.CellCt,mES,ChemBank,cell,fluorescence
+154_511,BetaCateninSignaling.FluorDye.PosCellsW2_Int,HTB-96.bCAT-EGFP,ChemBank,cell,fluorescence
+16_27,BetaCateninSignaling.FluorDye.PosNucW2_Int,HTB-96.bCAT-EGFP,ChemBank,cell,fluorescence
+160_519,TrypanothioneReductase.Absorb.355,TrypRed,ChemBank,biochem,absorbance
+167_538,VibrioQuorumSensing.FluorProt.485/535,JMH610.AI2,ChemBank,bacterial,FluorProtein
+167_539,VibrioQuorumSensing.FluorProt.485/535,JMH624.AI1,ChemBank,bacterial,FluorProtein
+168_541,VibrioQuorumSensing.Lumin.545,BB721,ChemBank,bacterial,luminescence
+168_542,VibrioQuorumSensing.Lumin.545,JMH610.AI2,ChemBank,bacterial,Luminescence
+168_543,VibrioQuorumSensing.Lumin.545,JMH624.AI1,ChemBank,bacterial,Luminescence
+169_544,WntSignalling.Lumin.Lux-Duo,HT22.LiCl+,ChemBank,cell,luminescence
+169_545,WntSignalling.Lumin.Lux-Duo,HT22.LiCl-,ChemBank,cell,luminescence
+169_548,WntSignalling.Lumin.Lux-Duo,RKO.LiCl-,ChemBank,cell,luminescence
+169_549,WntSignalling.Lumin.Lux-Duo,RKO.WntCond,ChemBank,cell,luminescence
+17_28,BetaCateninSignaling.FluorDye.PosW2,HTB-96.bCAT-EGFP,ChemBank,cell,fluorescence
+170_550,WntSignalling.Lumin.Lux-FF/Ren,DLD1.4TO.pcDNA,ChemBank,cell,LuxReporter
+170_551,WntSignalling.Lumin.Lux-FF/Ren,DLD1.ToptK.FoptK,ChemBank,cell,LuxReporter
+174_555,WormPathogenesis.FluorDye.Sytox,AU18.MMH594,ChemBank,worm,fluorescence
+175_559,YeastGrowthInhibition.Absorb.600,BY4716._Basal.48h,ChemBank,cell,absorbance
+175_561,YeastGrowthInhibition.Absorb.600,BY4716.Sert14.48h,ChemBank,yeast,absorbance
+177_585,177_585,177_585,177_585,cell,qPCR
+178_591,178_591,178_591,178_591,cell,qPCR
+178_684,178_684,178_684,178_684,cell,luminescence
+179_659,179_659,179_659,179_659,fungal,NA
+18_29,BetaCateninSignaling.FluorDye.TotalNuclei,HTB-96.bCAT-EGFP,ChemBank,cell,fluorescence
+180_686,180_686,180_686,180_686,fungal,fluorescence
+181_599,181_599,181_599,181_599,cell,fluorescence
+181_600,181_600,181_600,181_600,bacterial,fluorescence
+183_604,183_604,183_604,183_604,cell,luminescence
+184_606,184_606,184_606,184_606,cell,luminescence
+185_665,MLPCNmaternalgeneexpression,P Channel,GeneData,biochem,qPCR
+185_666,MLPCNmaternalgeneexpression,S Channel,GeneData,biochem,qPCR
+185_667,MLPCNmaternalgeneexpression,FITC FP,GeneData,biochem,fluorescence
+186_668,186_668,186_668,186_668,cell,fluorescence
+186_669,186_669,186_669,186_669,cell,fluorescence
+187_618,187_618,187_618,187_618,biochem,luminescence
+187_619,187_619,187_619,187_619,cell,luminescence
+19_30,BetaCateninSignaling.FluorDye.TotPos,HTB-96.bCAT-EGFP,ChemBank,cell,fluorescence
+190_628,190_628,190_628,190_628,cell,qPCR
+190_629,190_629,190_629,190_629,cell,qPCR
+190_674,190_674,190_674,190_674,cell,qPCR
+191_630,MLPCNRanGTPinhibitor,cfp_ran,CBIP,biochem,fluorescence
+191_631,MLPCNRanGTPinhibitor,yfp_importin_beta,CBIP,biochem,fluorescence
+191_675,MLPCNRanGTPinhibitor,Layer 3,GeneData,biochem,fluorescence
+192_635,192_635,192_635,192_635,cell,luminescence
+193_723,193_723,193_723,193_723,cell,luminescence
+194_639,MLPCNGSK3beta,1536 lum white,GeneData,biochem,luminescence
+194_678,MLPCNGSK3beta,Layer 1,GeneData,biochem,luminescence
+195_642,MLPCNInteinTB,fluorescence,GeneData,biochem,fluorescence
+196_644,MLPCNSTK33invitro,lum,GeneData,biochem,luminescence
+197_645,197_645,197_645,197_645,biochem,fluorescence
+197_646,197_646,197_646,197_646,biochem,fluorescence
+197_647,197_647,197_647,197_647,biochem,fluorescence
+197_648,197_648,197_648,197_648,biochem,fluorescence
+197_649,197_649,197_649,197_649,biochem,fluorescence
+197_650,197_650,197_650,197_650,biochem,fluorescence
+197_651,197_651,197_651,197_651,biochem,fluorescence
+198_682,MLPCNBetaCellApoptosis,Layer 1,GeneData,cell,luminescence
+199_657,MLPCNHDAC3,fluorescence,GeneData,biochem,fluorescence
+200_658,200_658,200_658,200_658,cell,fluorescence
+201_660,201_660,201_660,201_660,cell,NA
+202_661,MLPCN Ras selective lethality,Layer 1,GeneData,cell,luminescence
+203_662,MLPCN Polyadenylation,Luminescent galactosidase assay,GeneData,yeast,luminescence
+204_663,MLPCN Platelet activation,Layer 1,GeneData,cell,luminescence
+205_664,MLPCN T. cruzi inhibition,Luminescence,GeneData,bacterial,luminescence
+206_670,MLPCN Ras Converting Enzyme,Fluorescence (T60-T1),GeneData,biochem,fluorescence
+206_671,MLPCN Ras Converting Enzyme,ABZ Intensity T60,GeneData,biochem,fluorescence
+207_672,MLPCN Quorum-Sensing,observation_2,GeneData,bacterial,luminescence
+208_673,MLPCN Antifungal,Layer 1,GeneData,fungal,fluorescence
+209_676,MLPCN GASC-1,delfia,GeneData,biochem,fluorescence
+21_32,BetaCellDifferentiation.FluorDye.TotalNuclei,CRL-2350;Beta-TC-3,ChemBank,cell,fluorescence
+210_677,MLPCN A1 apoptosis,caspaseglo,GeneData,cell,luminescence
+212_680,MLPCN KSHV FP Screen,Layer 1,GeneData,biochem,fluorescence
+213_681,MLPCN SUMO Inhibitors,lumenescence growth,GeneData,yeast,luminescence
+214_683,MLPCN GSK3alpha,1536 lum white,GeneData,biochem,luminescence
+215_685,215_685,215_685,215_685,cell,luminescence
+216_687,MLPCN CDK5,1536 lum white,GeneData,biochem,luminescence
+217_688,MLPCN Streptokinase expression,Layer 1,GeneData,bacterial,luminescence
+217_689,MLPCN Streptokinase expression,Luminescence,GeneData,bacterial,luminescence
+219_691,MLPCN RTT109,FL380/510,GeneData,biochem,fluorescence
+220_692,220_692,220_692,220_692,biochem,fluorescence
+221_693,221_693,221_693,221_693,cell,luminescence
+223_695,MLPCN C-Terminal LANA Inhibitors,Layer 1,GeneData,biochem,fluorescence
+224_696,MLPCN Topoisomerase 1 Y. pestis,Fluorescence,GeneData,bacterial,fluorescence
+225_697,MLPCN Dyrk-1 kinase,luminesence,GeneData,biochem,luminescence
+227_699,MLPCN PDI Inhibitor,absorbance t90,GeneData,biochem,absorbance
+228_700,228_700,228_700,228_700,biochem,fluorescence
+229_701,MLPCN Alpha-Synuclein 5'UTR,Layer 1,GeneData,cell,luminescence
+23_34,BetaCellDifferentiation.ImmFluor.PercentBeta,CRL-2350;Beta-TC-3,ChemBank,cell,fluorescence
+230_702,MLPCN maternal gene expression,FITC FP,GeneData,biochem,fluorescence
+231_703,MLPCN Epstein-Barr LMP-1,luminescence,GeneData,cell,luminescence
+232_704,MLPCN Cancer Stem Cells,observation_0,GeneData,cell,luminescence
+232_705,MLPCN Cancer Stem Cells,Z_Score,GeneData,cell,luminescence
+233_706,MLPCN PGC-1a Modulators,alpha,GeneData,cell,fluorescence
+234_707,MLPCN esBAF inhibitor,steadyglo,GeneData,cell,luminescence
+235_708,MLPCN miR-122,Layer 1,GeneData,cell,luminescence
+236_709,MLPCN NLG,t10,GeneData,cell,luminescence
+237_710,MLPCN FadD28 Inhibitor,Anisotropy,GeneData,biochem,fluorescence
+237_711,MLPCN FadD28 Inhibitor,Total Fluorescence,GeneData,biochem,fluorescence
+238_712,MLPCN Dengue,luminescence,GeneData,viral,luminescence
+239_713,MLPCN ARNT/TACC3,Layer 1,GeneData,biochem,fluorescence
+24_35,BetaCellDifferentiation.ImmFluor.PercentEndocrine,CRL-2350;Beta-TC-3,ChemBank,cell,fluorescence
+240_714,MLPCN AF4-AF9,Layer 1,GeneData,biochem,fluorescence
+241_715,MLPCN C. neoformans,Layer 1,GeneData,bacterial,luminescence
+242_716,MLPCN TB BioA inhibitors,Layer 1,GeneData,bacterial,fluorescence
+243_717,MLPCN UDP-Bac PglD,Layer 1,GeneData,biochem,absorbance
+244_718,MLPCN ERp5,absorbance,GeneData,biochem,absorbance
+245_719,MLPCN HIF activator,luminescence,GeneData,cell,luminescence
+246_720,MLPCN FGF-22,Delta Tm,GeneData,biochem,fluorescence
+247_721,MLPCN PHGDH,T20-T0,GeneData,biochem,fluorescence
+248_722,MLPCN SirT5,Layer 1,GeneData,biochem,fluorescence
+249_724,MLPCN S100A4,FPcalc,GeneData,biochem,fluorescence
+25_36,BetaCellDifferentiation.ImmFluor.PosTotalPosAlphaRatio,CRL-2350;Beta-TC-3,ChemBank,cell,fluorescence
+250_725,250_725,250_725,250_725,cell,luminescence
+250_726,250_726,250_726,250_726,cell,luminescence
+251_727,251_727,251_727,251_727,cell,luminescence
+253_729,253_729,253_729,253_729,cell,fluorescence
+254_730,254_730,254_730,254_730,cell,luminescence
+257_735,MLPCN PRP,Layer 1,GeneData,cell,luminescence
+258_736,MLPCN CAL PDZ,Layer 1,GeneData,biochem,fluorescence
+259_737,MLPCN CAL PDZ,fp,GeneData,biochem,fluorescence
+26_37,BetaCellDifferentiation.ImmFluor.TotalPosEndocrine,CRL-2350;Beta-TC-3,ChemBank,cell,fluorescence
+260_738,MLPCN HDL Receptor,Layer 1,GeneData,cell,fluorescence
+261_739,261_739,261_739,261_739,biochem,fluorescence
+262_740,MLPCN VIF,%positivew2_mean,GeneData,cell,fluorescence
+263_741,MLPCN Hsp40,luminescence bactiter-glo,GeneData,bacterial,luminescence
+264_742,MLPCN Rad54,fitc rad54,GeneData,biochem,fluorescence
+265_743,MLPCN HIV Entry,Layer 1,GeneData,viral,luminescence
+266_744,MLPCN V. cholerae Quorum,Luminescence,GeneData,bacterial,luminescence
+267_745,MLPCN Start codon fidelity,Steady/alamar ratio,GeneData,yeast,fluorescence
+268_746,268_746,268_746,268_746,biochem,fluorescence
+269_747,MLPCN Insulin Secretion,luminescence,GeneData,cell,luminescence
+27_38,BloodOsmoticLysis.Absorb.700,IndoChina.Blood.01h,ChemBank,cell,CellTiter-Glo cell viability assay optimized
+27_39,BloodOsmoticLysis.Absorb.700,IndoChina.Blood.02h,ChemBank,cell,CellTiter-Glo cell viability assay optimized
+27_40,BloodOsmoticLysis.Absorb.700,IndoChina.Blood.03h,ChemBank,cell,CellTiter-Glo cell viability assay optimized
+270_748,MLPCN E-Selectin,%positivew2_mean,GeneData,cell,fluorescence
+271_749,MLPCN iPSC Wnt-B-catenin,luminescence,GeneData,cell,luminescence
+272_750,MLPCN C. neoformans,alamar blue,GeneData,bacterial,fluorescence
+273_751,MLPCN HSF2,Layer 1,GeneData,biochem,luminescence
+274_752,MLPCN LGR2,firefly luciferase,GeneData,cell,luminescence
+275_753,MLPCN X-reactivation,totalcells_sum,GeneData,cell,fluorescence
+275_754,MLPCN X-reactivation,%positivew2_mean,GeneData,cell,fluorescence
+276_755,MLPCN ERAP1,fluorescencedelta,GeneData,biochem,fluorescence
+277_756,MLPCN CFTR,yfp fluorescence,GeneData,cell,fluorescence
+278_757,MLPCN Casp-6,f40,GeneData,cell,luminescence
+279_758,MLPCN Fibronectin,Layer 1,GeneData,cell,fluorescence
+280_759,MLPCN C. diff tox,amplexred,GeneData,bacterial,fluorescence
+281_760,MLPCN CaV1.3,FR,GeneData,cell,fluorescence
+283_762,MLPCN NSD2,alpha screen,GeneData,biochem,fluorescence
+29_43,BMP-SMADSignaling.Reporter.PNPP,mPASMC,ChemBank,cell,enzyme-coupled colorimetric assay
+3_3,AndrogenSignaling.FluorDye.DAPI,HEK293.CARY,ChemBank,cell,fluorescence
+37_69,CardiovascularProfiling.FluorDye.JC1Mito,AO0926._Basal.24h,ChemBank,cell,fluorescence
+37_70,CardiovascularProfiling.FluorDye.JC1Mito,AO1809._Basal.24h,ChemBank,cell,fluorescence
+37_74,CardiovascularProfiling.FluorDye.JC1Mito,MV1504._Basal.24h,ChemBank,cell,fluorescence
+37_77,CardiovascularProfiling.FluorDye.JC1Mito,UV0482._Basal.24h,ChemBank,cell,fluorescence
+40_95,CardiovascularProfiling.Lumin.CTG,UV0445._Basal.24h,ChemBank,cell,luminescence
+40_96,CardiovascularProfiling.Lumin.CTG,UV0482._Basal.24h,ChemBank,cell,luminescence
+42_103,CellMetabolicProfiling.Absorb.MTTStain,TubesC._Basal.48h,ChemBank,cell,absorbance
+42_104,CellMetabolicProfiling.Absorb.MTTStain,TubesC.CCCP.48h,ChemBank,cell,absorbance
+44_106,CellMetabolicProfiling.FluorDye.AmplexRed,L6,ChemBank,cell,fluorescence
+46_120,CellMetabolicProfiling.FluorDye.DAPI,MCH58.PKLO.Gal,ChemBank,cell,fluorescence
+49_149,CellMetabolicProfiling.FluorDye.NileRed,C57B6.IRS1-/-.Dex.IBMX.Indo,ChemBank,cell,Fluorescence
+5_5,AnthraxPathogenesis.Lumin.CTG,TIB-67.LFPA,ChemBank,bacterial,luminescence
+50_154,CellMetabolicProfiling.FluorDye.OilRedO,"C57B6.IRS1,2+/+.96h",ChemBank,cell,fluorescence
+53_178,CellMetabolicProfiling.Lumin.CTG,TubesC._Basal.48h,ChemBank,cell,luminescence
+54_179,CellularEsteraseActivity.FluorDye.Calcein,A549._Basal.24h,ChemBank,cell,fluorescence
+54_182,CellularEsteraseActivity.FluorDye.Calcein,A549.Caly.24h,ChemBank,cell,fluorescence
+6_7,ApoptoticSignaling.Lumin.CaspaseGlo,HTB-65_MSCV_A1_tBID,ChemBank,cell,Caspase luminesence
+7_10,AspulvinoneRegulation.Absorb.405,ATCC10020.CsA+,ChemBank,bacterial,colorimetric metabolite detection
+7_11,AspulvinoneRegulation.Absorb.405,ATCC10020.CsA-,ChemBank,bacterial,absorbance
+70_211,CyclicAMPSignaling.Reporter.cAMP-EBX1,HEK293,ChemBank,cell,LuxReporter
+71_212,DengueInfectivity.Reporter.Lux-Ren,BHK.Dengue.10h,ChemBank,cell,LuxReporter
+71_213,DengueInfectivity.Reporter.Lux-Ren,BHK.Dengue.24h,ChemBank,cell,LuxReporter
+76_230,eCadherinSignaling.Lumin.CTG,HMLE.siECAD/siGFP,ChemBank,biochem,Luminescence
+78_237,ErythroidSurvival.Lumin.CTG,FetalHepat.As,ChemBank,cell,CellTiterGlo
+8_12,AspulvinoneRegulation.Absorb.600,ATCC10020.CsA+,ChemBank,bacterial,absorbance
+8_13,AspulvinoneRegulation.Absorb.600,ATCC10020.CsA-,ChemBank,bacterial,absorbance
+80_239,FRG1ProteinExpression.Reporter.Lux-FF/Ren,C2C12.FRG1,ChemBank,cell,LuxReporter
+81_241,GalactokinaseSignaling.Lumin.KinGlo,GALK1,ChemBank,biochem,luminescence
+82_242,GenotypeProfiling.FluorDye.Resazurin,CCL-185,ChemBank,cell,fluorescence
+82_243,GenotypeProfiling.FluorDye.Resazurin,CRL-5865,ChemBank,cell,fluorescence
+83_244,GlutamateDehydrogenase.Absorb.360,GluDH,ChemBank,biochem,absorbance
+83_245,GlutamateDehydrogenase.Absorb.360,GluDH.GTP,ChemBank,biochem,absorbance
+84_246,GlutamateDehydrogenase.Absorb.540,GlnA,ChemBank,homogeneous,absorbance
+85_247,GSISyntheticLethality.FluorDye.Resazurin,KoptK1.GSI,ChemBank,cell,fluorescence
+85_248,GSISyntheticLethality.FluorDye.Resazurin,KoptK1.GSI/Basal,ChemBank,cell,fluorescence
+86_249,HairlessSignaling.Reporter.Lux-Hrl,HR2,ChemBank,cell,Luminescence
+86_250,HairlessSignaling.Reporter.Lux-Hrl,HR3,ChemBank,cell,Luminescence
+88_252,HeatShockModulation.FluorProt.HSE-GFP,3T3,ChemBank,cell,fluorescence
+88_254,HeatShockModulation.FluorProt.HSE-GFP,3T3.43C,ChemBank,cell,fluorescence
+89_255,HemeCrystalization.Absorb.405,Heme,ChemBank,biochem,absorbance
+9_14,BacterialViability.Absorb.600,EFAE,ChemBank,bacterial,absorbance
+9_17,BacterialViability.Absorb.600,PAO1,ChemBank,bacterial,absorbance
+9_18,BacterialViability.Absorb.600,SAU,ChemBank,bacterial,absorbance
+90_256,HemeDetoxification.Absorb.414,Heme.FRAP+,ChemBank,biochem,absorbance
+91_257,HepatitisCInfectivity.Lumin.CTG,Huh7._Basal.48h,ChemBank,cell,luminescence
+92_258,HepatitisCInfectivity.Reporter.Lux-Feo,Huh7,ChemBank,cell,LuxReporter
+93_259,HoxA13DNABinding.FluorOligo.HoxDNA,HoxA13,ChemBank,biochem,fluorescence
