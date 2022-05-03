@@ -38,26 +38,21 @@ library(plotROC)
 # read test data 
 ```{r}
 # response <- read_csv('../../../analysis/scaffold_based/assay_matrix_discrete_test_old_scaff.csv')  %>%
-response <- read_csv('../data/assay_matrix_discrete_test_old_scaff.csv')  %>% 
+response <- read_csv('../predictions/chemical_jan22_cv4/assay_matrix_discrete_test_old_scaff.csv')  %>% 
   print
 ```
 ## read assay prediction
 ```{r}
-# result_vector_cp <- read_csv("../../../results/scaffold_based/chemprop/predictions/predictions_cp_op_es.csv")  
-# result_vector_mo <- read_csv("../../../results/scaffold_based/chemprop/predictions/predictions_mo_op_es.csv")  
-# result_vector_ge <- read_csv("../../../results/scaffold_based/chemprop/predictions/predictions_ge_op_es.csv") 
-# result_vector_ge_cp <- read_csv("../../../results/scaffold_based/chemprop/predictions/predictions_ge_cp_op_es.csv")  
-# result_vector_mo_cp <- read_csv("../../../results/scaffold_based/chemprop/predictions/predictions_mo_cp_op_es.csv") 
-# result_vector_ge_mo <- read_csv("../../../results/scaffold_based/chemprop/predictions/predictions_ge_mo.csv") 
-# result_vector_ge_mo_cp <- read_csv("../../../results/scaffold_based/chemprop/predictions/predictions_ge_mo_cp_op_es.csv")  
 
-result_vector_cp <- read_csv("../predictions/predictions_cp_op_es.csv")  
-result_vector_mo <- read_csv("../predictions/predictions_mo_op_es.csv")  
-result_vector_ge <- read_csv("../predictions/predictions_ge_op_es.csv") 
-result_vector_ge_cp <- read_csv("../predictions/predictions_ge_cp_op_es.csv")  
-result_vector_mo_cp <- read_csv("../predictions/predictions_mo_cp_op_es.csv") 
-result_vector_ge_mo <- read_csv("../predictions/predictions_ge_mo.csv") 
-result_vector_ge_mo_cp <- read_csv("../predictions/predictions_ge_mo_cp_op_es.csv")  
+result_vector_cp <- read_csv("../predictions/chemical_jan22_cv4/predictions/predictions_cp_es_op.csv")  
+result_vector_mo <- read_csv("../predictions/chemical_jan22_cv4/predictions/predictions_mo_es_op.csv") 
+result_vector_mobc <- read_csv("../predictions/chemical_jan22_cv4/predictions/predictions_mobc_es_op.csv")
+result_vector_ge <- read_csv("../predictions/chemical_jan22_cv4/predictions/predictions_ge_es_op.csv")
+
+result_vector_ge_cp <- read_csv("../predictions/chemical_jan22_cv4/predictions/late_fusion_cs_ge.csv")  
+result_vector_mobc_cp <- read_csv("../predictions/chemical_jan22_cv4/predictions/late_fusion_cs_mobc.csv") 
+result_vector_ge_mobc <- read_csv("../predictions/chemical_jan22_cv4/predictions/late_fusion_ge_mobc.csv") 
+result_vector_ge_mobc_cp <- read_csv("../predictions/chemical_jan22_cv4/predictions/late_fusion_cs_ge_mobc.csv")  
 
 
 ```
@@ -73,11 +68,11 @@ plot_roc_single_predictors <- function(assay_id_to_plot) {
   test_data <- data.frame(
     response =  response %>% extract2(assay_id_to_plot), 
     result_cp = result_vector_cp %>% extract2(assay_id_to_plot),
-    result_mo = result_vector_mo %>% extract2(assay_id_to_plot),
+    result_mobc = result_vector_mobc %>% extract2(assay_id_to_plot),
     result_ge = result_vector_ge %>% extract2(assay_id_to_plot)
     )
   
-  longdata <- melt_roc(test_data, "response", c("result_cp", "result_mo","result_ge"))
+  longdata <- melt_roc(test_data, "response", c("result_cp", "result_mobc","result_ge"))
   
   ggplot(longdata, aes(d = D, m = M, color = name)) + 
     geom_roc(labels = FALSE, pointsize = 0) + 
@@ -92,16 +87,17 @@ plot_roc_single_predictors <- function(assay_id_to_plot) {
     ylab("True Positive Fraction")  + 
     theme(legend.position="none")
   
-  save_name <- paste0("roc_singe_descriptor_",assay_id_to_plot,".png")
-  ggsave(paste0("../figures/",save_name))
+  save_name <- paste0("roc_singe_descriptor_jan22_",assay_id_to_plot,".png")
+  ggsave(paste0("../plots/",save_name))
 }
 ```
 
 ```{r}
-plot_roc_single_predictors("280_759")
-plot_roc_single_predictors("241_715")
-plot_roc_single_predictors("282_761")
-plot_roc_single_predictors("261_739")
+plot_roc_single_predictors("277_756")
+#plot_roc_single_predictors("280_759")
+#plot_roc_single_predictors("241_715")
+#plot_roc_single_predictors("282_761")
+#plot_roc_single_predictors("261_739")
 ```
 
 
@@ -111,12 +107,12 @@ plot_roc_combined_predictors <- function(assay_id_to_plot) {
   test_data <- data.frame(
     response =  response %>% extract2(assay_id_to_plot), 
     result_ge_cp = result_vector_ge_cp %>% extract2(assay_id_to_plot),
-    result_ge_mo_cp = result_vector_ge_mo_cp %>% extract2(assay_id_to_plot),
-    result_mo_cp = result_vector_mo_cp %>% extract2(assay_id_to_plot),
-    result_ge_mo = result_vector_ge_mo %>% extract2(assay_id_to_plot)
+    result_ge_mobc_cp = result_vector_ge_mobc_cp %>% extract2(assay_id_to_plot),
+    result_mobc_cp = result_vector_mobc_cp %>% extract2(assay_id_to_plot),
+    result_ge_mobc = result_vector_ge_mobc %>% extract2(assay_id_to_plot)
     )
 
-  longdata <- melt_roc(test_data, "response", c("result_ge_cp", "result_ge_mo_cp","result_mo_cp","result_ge_mo"))
+  longdata <- melt_roc(test_data, "response", c("result_ge_cp", "result_ge_mobc_cp","result_mobc_cp", "result_ge_mobc"))
 
   ggplot(longdata, aes(d = D, m = M, color = name)) + 
     geom_roc(labels = FALSE, pointsize = 0) + 
@@ -127,134 +123,21 @@ plot_roc_combined_predictors <- function(assay_id_to_plot) {
       panel.background = element_blank(), axis.line = element_line(colour = "black")) + 
     theme(text = element_text(size=16)) + 
     xlab("False Positive Fraction") +
-    ylab("True Positive Fraction") 
+    ylab("True Positive Fraction") + 
+    theme(legend.position="none")
 
   save_name <- paste0("roc_",assay_id_to_plot,".png")
-  ggsave(paste0("../figures/",save_name))
+  ggsave(paste0("../plots/",save_name))
 }
 ```
 
 ## show ROC curves 
 ```{r}
-plot_roc_combined_predictors("280_759")
-plot_roc_combined_predictors("241_715")
-plot_roc_combined_predictors("282_761")
-plot_roc_combined_predictors("261_739")
+plot_roc_combined_predictors("277_756")
+#plot_roc_combined_predictors("280_759")
+#plot_roc_combined_predictors("241_715")
+#plot_roc_combined_predictors("282_761")
+#plot_roc_combined_predictors("261_739")
 ```
 
-```{r}
-
-plot_values_single_predictor <- function(plot_id) {
-  
-  plot_data_long <- test_data <- tibble(
-      response =  response %>% extract2(plot_id), 
-      result_ge_cp = result_vector_ge_cp %>% extract2(plot_id),
-      result_ge_mo_cp = result_vector_ge_mo_cp %>% extract2(plot_id),
-      result_mo_cp = result_vector_mo_cp %>% extract2(plot_id),
-      result_ge_mo = result_vector_ge_mo %>% extract2(plot_id),
-        result_cp = result_vector_cp %>% extract2(plot_id),
-      result_mo = result_vector_mo %>% extract2(plot_id),
-      result_ge = result_vector_ge %>% extract2(plot_id)
-      ) %>% 
-       mutate(response = coalesce(response, -10)) %>% 
-      pivot_longer(-response, names_to = "descriptor", values_to = "value") %>% 
-      mutate(descriptor=replace(descriptor, descriptor=="result_mo_cp", "CP+MO")) %>%
-      mutate(descriptor=replace(descriptor, descriptor=="result_ge_mo_cp", "CP+GE+MO")) %>%
-      mutate(descriptor=replace(descriptor, descriptor=="result_ge_mo", "GE+MO")) %>%
-      mutate(descriptor=replace(descriptor, descriptor=="result_ge_cp", "CP+GE")) %>%
-      mutate(descriptor=replace(descriptor, descriptor=="result_mo", "MO")) %>%
-      mutate(descriptor=replace(descriptor, descriptor=="result_ge", "GE")) %>%
-      mutate(descriptor=replace(descriptor, descriptor=="result_cp", "CP")) %>%
-      group_by(descriptor) %>% 
-      arrange(-value) %>% 
-      mutate(number = 1 ) %>% 
-      mutate(ticker = cumsum(number)) %>% 
-      mutate(response_text = as.character(response)) %>% 
-      mutate(response_text = replace(response_text, response_text == "1","hit")) %>% 
-      mutate(response_text = replace(response_text, response_text == "0","no hit")) %>% 
-      mutate(response_text = replace(response_text, response_text == "-10","reference data: not available")) %>% 
-    filter(response > -1)
-
-  ggplot(data = plot_data_long %>% filter(descriptor %in% c("CP","GE","MO")), aes(x = ticker, y = value,  color = response_text )) +
-    geom_point( size = 1 ) +
-    facet_wrap( ~ descriptor) +
-    ylab("predicted value") +
-    xlab("test compound") +
-    theme_linedraw() +
-    #coord_fixed() +
-    scale_color_manual(values=c("red","blue","lightgray")) +
-    theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
-      panel.background = element_blank(), axis.line = element_line(colour = "black")) +
-    theme(text = element_text(size=16))
-}
-
-```
-
-
-```{r}
-
-plot_values_combined_predictors <- function(plot_id) {
-  
-  plot_data_long <- test_data <- tibble(
-      response =  response %>% extract2(plot_id), 
-      result_ge_cp = result_vector_ge_cp %>% extract2(plot_id),
-      result_ge_mo_cp = result_vector_ge_mo_cp %>% extract2(plot_id),
-      result_mo_cp = result_vector_mo_cp %>% extract2(plot_id),
-      result_ge_mo = result_vector_ge_mo %>% extract2(plot_id),
-        result_cp = result_vector_cp %>% extract2(plot_id),
-      result_mo = result_vector_mo %>% extract2(plot_id),
-      result_ge = result_vector_ge %>% extract2(plot_id)
-      ) %>% 
-       mutate(response = coalesce(response, -10)) %>% 
-      pivot_longer(-response, names_to = "descriptor", values_to = "value") %>% 
-      mutate(descriptor=replace(descriptor, descriptor=="result_mo_cp", "CP+MO")) %>%
-      mutate(descriptor=replace(descriptor, descriptor=="result_ge_mo_cp", "CP+GE+MO")) %>%
-      mutate(descriptor=replace(descriptor, descriptor=="result_ge_mo", "GE+MO")) %>%
-      mutate(descriptor=replace(descriptor, descriptor=="result_ge_cp", "CP+GE")) %>%
-      mutate(descriptor=replace(descriptor, descriptor=="result_mo", "MO")) %>%
-      mutate(descriptor=replace(descriptor, descriptor=="result_ge", "GE")) %>%
-      mutate(descriptor=replace(descriptor, descriptor=="result_cp", "CP")) %>%
-      group_by(descriptor) %>% 
-      arrange(-value) %>% 
-      mutate(number = 1 ) %>% 
-      mutate(ticker = cumsum(number)) %>% 
-      mutate(response_text = as.character(response)) %>% 
-      mutate(response_text = replace(response_text, response_text == "1","hit")) %>% 
-      mutate(response_text = replace(response_text, response_text == "0","no hit")) %>% 
-      mutate(response_text = replace(response_text, response_text == "-10","reference data: not available")) %>% 
-    filter(response > -1)
-
-  
-    ggplot(data = plot_data_long %>% filter(descriptor %in% c("CP+GE","CP+MO","GE+MO","CP+GE+MO")), aes(x = ticker, y = value,  color = response_text )) +
-    geom_point(size = 1 ) +
-    facet_wrap( ~ descriptor) + 
-    ylab("predicted value") + 
-    xlab("test compound") + 
-    theme_linedraw() + 
-    #coord_fixed() +
-    scale_color_manual(values=c("red","blue","lightgray")) + 
-    theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
-      panel.background = element_blank(), axis.line = element_line(colour = "black")) + 
-    theme(text = element_text(size=16)) 
-}
-
-```
-
-
-```{r}
-plot_values_single_predictor("280_759")
-plot_values_single_predictor("241_715")
-plot_values_single_predictor("282_761")
-plot_values_single_predictor("261_739")
-```
-```{r}
-plot_values_combined_predictors("280_759")
-plot_values_combined_predictors("241_715")
-plot_values_combined_predictors("282_761")
-plot_values_combined_predictors("261_739")
-```
-
-
-```{r}
-result <- read_csv("../results/2020_07_evaluation.csv")
 ```
