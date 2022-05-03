@@ -8,7 +8,7 @@ from chemprop.data.utils import get_data_from_smiles
 from rdkit.Chem.FilterCatalog import *
 
 ### Path to the assay matrix here
-assay_train_file = 'assay_matrix_nopains_nofreq_noemptyassays.csv'
+assay_train_file = '../data/assay_matrix_discrete_270_assays.csv'
 ###
 
 smiles = []
