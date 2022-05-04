@@ -8,11 +8,11 @@ The related preprint [Predicting compound activity from phenotypic profiles and 
 # The overview structure of the project
 
     .
-    ├── analysis                # Jupyter and R notebooks for analysis
-    ├── data                    # Assay matrix and numpy files for clustering, splitting and other files
-    ├── plots                   # Produced plots
-    ├── predictions             # Prediction files: aggregated. Raw files are too big for GitHub.
-    ├── python                  # Python scripts for specific tasks
-    ├── scripts                 # Training and prediction shell scripts (essentially those are just for running ChemProp) 
+    ├── analysis            # Jupyter and R notebooks for analysis
+    ├── data                # Assay matrix and numpy files for clustering, splitting and other files
+    ├── plots               # Produced plots
+    ├── predictions         # Prediction files: aggregated. Raw files are too big for GitHub.
+    ├── python              # Python scripts for specific tasks
+    ├── scripts             # Training and prediction shell scripts (for running ChemProp) 
     ├── LICENSE
     └── README.md
