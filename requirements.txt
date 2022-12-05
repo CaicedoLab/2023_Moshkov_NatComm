@@ -6,3 +6,4 @@ seaborn
 scipy
 tqdm
 venn
+scikit-learn
