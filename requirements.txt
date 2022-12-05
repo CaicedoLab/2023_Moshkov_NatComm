@@ -7,3 +7,5 @@ scipy
 tqdm
 venn
 scikit-learn
+deepchem
+rdkit
