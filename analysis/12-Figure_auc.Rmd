@@ -7,28 +7,6 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-http://ec2-52-90-145-233.compute-1.amazonaws.com:9100/hub/login
-
-##Input 
-response <- read_csv('../../../analysis/scaffold_based/assay_matrix_discrete_test_old_scaff.csv')
-
-result_vector_cp <- read_csv("../../../results/scaffold_based/chemprop/predictions/predictions_cp_op_es.csv")  
-result_vector_mo <- read_csv("../../../results/scaffold_based/chemprop/predictions/predictions_mo_op_es.csv")  
-result_vector_ge <- read_csv("../../../results/scaffold_based/chemprop/predictions/predictions_ge_op_es.csv") 
-result_vector_ge_cp <- read_csv("../../../results/scaffold_based/chemprop/predictions/predictions_ge_cp_op_es.csv")  
-result_vector_mo_cp <- read_csv("../../../results/scaffold_based/chemprop/predictions/predictions_mo_cp_op_es.csv") 
-result_vector_ge_mo <- read_csv("../../../results/scaffold_based/chemprop/predictions/predictions_ge_mo.csv") 
-result_vector_ge_mo_cp <- read_csv("../../../results/scaffold_based/chemprop/predictions/predictions_ge_mo_cp_op_es.csv") 
-
-## Optional output: 
-  save_name <- paste0("roc_singe_descriptor_",assay_id_to_plot,".png")
-  ggsave(paste0("../../../analysis/scaffold_based/",save_name))
-
-## colors 
-The color map sucks. To change it, use the line 
-``` scale_color_manual(values=c("#F1C232","#6FA8DC","#93C47C")) ```
- in each plot function
-
 ```{r}
 library(tidyverse)
 library(magrittr)
@@ -37,23 +15,20 @@ library(plotROC)
 ```
 # read test data 
 ```{r}
-# response <- read_csv('../../../analysis/scaffold_based/assay_matrix_discrete_test_old_scaff.csv')  %>%
-response <- read_csv('../predictions/chemical_jan22_cv4/assay_matrix_discrete_test_old_scaff.csv')  %>% 
+response <- read_csv('../predictions/chemical_cv4/assay_matrix_discrete_test_old_scaff.csv')  %>% 
   print
 ```
 ## read assay prediction
 ```{r}
 
-result_vector_cp <- read_csv("../predictions/chemical_jan22_cv4/predictions/predictions_cp_es_op.csv")  
-result_vector_mo <- read_csv("../predictions/chemical_jan22_cv4/predictions/predictions_mo_es_op.csv") 
-result_vector_mobc <- read_csv("../predictions/chemical_jan22_cv4/predictions/predictions_mobc_es_op.csv")
-result_vector_ge <- read_csv("../predictions/chemical_jan22_cv4/predictions/predictions_ge_es_op.csv")
+result_vector_cp <- read_csv("../predictions/chemical_cv4/predictions/predictions_cp_es_op.csv")  
+result_vector_mobc <- read_csv("../predictions/chemical_cv4/predictions/predictions_mobc_es_op.csv")
+result_vector_ge <- read_csv("../predictions/chemical_cv4/predictions/predictions_ge_es_op.csv")
 
-result_vector_ge_cp <- read_csv("../predictions/chemical_jan22_cv4/predictions/late_fusion_cs_ge.csv")  
-result_vector_mobc_cp <- read_csv("../predictions/chemical_jan22_cv4/predictions/late_fusion_cs_mobc.csv") 
-result_vector_ge_mobc <- read_csv("../predictions/chemical_jan22_cv4/predictions/late_fusion_ge_mobc.csv") 
-result_vector_ge_mobc_cp <- read_csv("../predictions/chemical_jan22_cv4/predictions/late_fusion_cs_ge_mobc.csv")  
-
+result_vector_ge_cp <- read_csv("../predictions/chemical_cv4/predictions/late_fusion_cs_ge.csv")  
+result_vector_mobc_cp <- read_csv("../predictions/chemical_cv4/predictions/late_fusion_cs_mobc.csv") 
+result_vector_ge_mobc <- read_csv("../predictions/chemical_cv4/predictions/late_fusion_ge_mobc.csv") 
+result_vector_ge_mobc_cp <- read_csv("../predictions/chemical_cv4/predictions/late_fusion_cs_ge_mobc.csv")
 
 ```
 # color codes 
@@ -85,19 +60,15 @@ plot_roc_single_predictors <- function(assay_id_to_plot) {
     theme(text = element_text(size=16)) + 
     xlab("False Positive Fraction") +
     ylab("True Positive Fraction")  + 
-    theme(legend.position="none")
+    theme(legend.position="left")
   
-  save_name <- paste0("roc_singe_descriptor_jan22_",assay_id_to_plot,".png")
+  save_name <- paste0("roc_singe_descriptor_",assay_id_to_plot,".png")
   ggsave(paste0("../plots/",save_name))
 }
 ```
 
 ```{r}
 plot_roc_single_predictors("277_756")
-#plot_roc_single_predictors("280_759")
-#plot_roc_single_predictors("241_715")
-#plot_roc_single_predictors("282_761")
-#plot_roc_single_predictors("261_739")
 ```
 
 
@@ -134,10 +105,6 @@ plot_roc_combined_predictors <- function(assay_id_to_plot) {
 ## show ROC curves 
 ```{r}
 plot_roc_combined_predictors("277_756")
-#plot_roc_combined_predictors("280_759")
-#plot_roc_combined_predictors("241_715")
-#plot_roc_combined_predictors("282_761")
-#plot_roc_combined_predictors("261_739")
 ```
 
 ```
