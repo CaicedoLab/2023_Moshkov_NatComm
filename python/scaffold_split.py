@@ -1,20 +1,16 @@
 import csv
-import os
-import pickle
 import random
 import numpy as np
 from copy import deepcopy
 
 from chemprop.data import scaffold_to_smiles
-from chemprop.data.utils import get_data_from_smiles, split_data, filter_invalid_smiles
-from chemprop.data.scaffold import scaffold_split
+from chemprop.data.utils import get_data_from_smiles
 
         
 def split_indices(all_indices,
                   num_folds,
                   data,
                   shuffle = True):
-    num_data = len(all_indices)
     scaffold_to_indices = scaffold_to_smiles(data.mols(flatten=True), use_indices=True)
     print(len(scaffold_to_indices))
     print(scaffold_to_indices)
@@ -45,14 +41,12 @@ def create_crossval_splits():
             smiles.append([row[0]])
             smiles_.append(row[0])
             
-    
-            
     data = get_data_from_smiles(smiles)
     all_indices = list(range(len(data)))    
     fold_indicies = split_indices(all_indices, num_folds=5, data=data)
     array = np.array(fold_indicies)
     print(array.shape)
-    np.savez('../data/scaffold_based_split_jan22.npz', features = array)
+    np.savez('../splitting/scaffold_based_split.npz', features = array)
 
 if __name__ == '__main__':
     random.seed(0)
