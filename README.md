@@ -1,11 +1,15 @@
 # Predicting compound activity from phenotypic profiles and chemical structures
 
+The code release: [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7742610.svg)](https://doi.org/10.5281/zenodo.7742610)
+
+
 The related preprint [Predicting compound activity from phenotypic profiles and chemical structures](https://www.biorxiv.org/content/10.1101/2020.12.15.422887). 
 
 ## The dataset, which includes all the related data is on Zenodo
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7729583.svg)](https://doi.org/10.5281/zenodo.7729583)
 
+## Experimental setup
 
 ![Scheme of the project](PUMA.png)
 
