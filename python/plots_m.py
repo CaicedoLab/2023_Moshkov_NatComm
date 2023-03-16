@@ -2,7 +2,6 @@ from tqdm import tqdm
 import numpy as np
 import seaborn as sb
 from matplotlib import pyplot as plt
-import subprocess
 from multiprocessing import Process
 
 class Starter(object):
@@ -42,12 +41,12 @@ class Starter(object):
 
 
 if __name__=="__main__":
-    similarity_fingerprints = '../data/similarity_fingerprints.npz'
+    similarity_fingerprints = '../misc/similarity_fingerprints.npz'
     with open(similarity_fingerprints, "rb") as data:
         sim_fp = np.load(data) 
         sim_fp = sim_fp['features']
 
-    with open('../data/compounds16978to16170.npy', 'rb') as data:
+    with open('../misc/compounds16978to16170.npy', 'rb') as data:
         compounds_final_indicies_from_16978 = np.load(data)
     
     mask=np.zeros( (16978, 16978), dtype=bool)
@@ -62,14 +61,13 @@ if __name__=="__main__":
     
     
     #For plotting of scaffold-based data use this
-    
-    #with open('../data/scaffold_based_split_jan22.npz', 'rb') as data:
+    #with open('../splitting/scaffold_based_split.npz', 'rb') as data:
     #    indicies = np.load(data, allow_pickle=True)
     #    indicies = indicies['features']
         
 
     #For morphology just replace the input file and output files
-    with open('../data/geneexp_clusters_size_constrained_jan22.npz', 'rb') as data:
+    with open('../splitting/geneexp_clusters_size_constrained.npz', 'rb') as data:
         indicies = np.load(data, allow_pickle=True) 
         indicies = indicies['features']
         
@@ -83,9 +81,9 @@ if __name__=="__main__":
             p.join()
 
 
-    a1 = Starter(np.array(np.argwhere(indicies==0)), sim_fp, '../plots/similarities/GEcv0_jan22.svg')
-    a2 = Starter(np.array(np.argwhere(indicies==1)), sim_fp, '../plots/similarities/GEcv1_jan22.svg')
-    a3 = Starter(np.array(np.argwhere(indicies==2)), sim_fp, '../plots/similarities/GEcv2_jan22.svg')
-    a4 = Starter(np.array(np.argwhere(indicies==3)), sim_fp, '../plots/similarities/GEcv3_jan22.svg')
-    a5 = Starter(np.array(np.argwhere(indicies==4)), sim_fp, '../plots/similarities/GEcv4_jan22.svg')
+    a1 = Starter(np.array(np.argwhere(indicies==0)), sim_fp, '../plots/similarities/GEcv0.svg')
+    a2 = Starter(np.array(np.argwhere(indicies==1)), sim_fp, '../plots/similarities/GEcv1.svg')
+    a3 = Starter(np.array(np.argwhere(indicies==2)), sim_fp, '../plots/similarities/GEcv2.svg')
+    a4 = Starter(np.array(np.argwhere(indicies==3)), sim_fp, '../plots/similarities/GEcv3.svg')
+    a5 = Starter(np.array(np.argwhere(indicies==4)), sim_fp, '../plots/similarities/GEcv4.svg')
     run(a1,a2,a3,a4,a5)
