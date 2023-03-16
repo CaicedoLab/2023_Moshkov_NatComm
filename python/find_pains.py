@@ -1,13 +1,14 @@
 import csv
 import numpy as np
 from chemprop.data.utils import get_data_from_smiles
-
+from rdkit.Chem import FilterCatalog
 from rdkit.Chem.FilterCatalog import *
+
 
 
 if __name__ == "__main__":
     # Path to the assay matrix here
-    assay_train_file = '../data/assay_matrix_discrete_270_assays.csv'
+    assay_train_file = '../assay_data/smiles.txt'
 
     smiles = []
     smiles_ = []
@@ -40,19 +41,21 @@ if __name__ == "__main__":
     for i in range(len(data)):
         if catalog_pains.HasMatch(data[i]):
             entries_pains.append(i)
+            entries_painsAll.append(i)
         if catalog_painsA.HasMatch(data[i]):
             entries_painsA.append(i)
+            entries_painsAll.append(i)
         if catalog_painsB.HasMatch(data[i]):
             entries_painsB.append(i)
+            entries_painsAll.append(i)
         if catalog_painsC.HasMatch(data[i]):
             entries_painsC.append(i)
-        if catalog_pains.HasMatch(data[i]) or catalog_painsA.HasMatch(data[i]) or  catalog_painsB.HasMatch(data[i]) or catalog_painsC.HasMatch(data[i]):
             entries_painsAll.append(i)
             
     print(len(entries_pains),len(entries_painsA),len(entries_painsB),len(entries_painsC), len(entries_painsAll) )
-    print( len(set(entries_pains + entries_painsA + entries_painsB + entries_painsC + entries_painsAll)))
+    print(len(set(entries_pains + entries_painsA + entries_painsB + entries_painsC + entries_painsAll)))
 
     all_matches = set(entries_pains + entries_painsA + entries_painsB + entries_painsC + entries_painsAll)
 
-    np.savez('compound_analysis.npz', pains_overall = list(all_matches), pains_a = list(set(entries_painsA)), \
+    np.savez('../misc/compound_analysis.npz', pains_overall = list(all_matches), pains_a = list(set(entries_painsA)), \
             pains_b = list(set(entries_painsB)), pains_c = list(set(entries_painsC)) )
