@@ -1,0 +1,110 @@
+---
+title: "read_chemprop_predictions"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+library(magrittr)
+library(ggplot2)
+library(plotROC)
+```
+# read test data 
+```{r}
+response <- read_csv('../predictions/chemical_cv4/assay_matrix_discrete_test_old_scaff.csv')  %>% 
+  print
+```
+## read assay prediction
+```{r}
+
+result_vector_cp <- read_csv("../predictions/chemical_cv4/predictions/predictions_cp_es_op.csv")  
+result_vector_mobc <- read_csv("../predictions/chemical_cv4/predictions/predictions_mobc_es_op.csv")
+result_vector_ge <- read_csv("../predictions/chemical_cv4/predictions/predictions_ge_es_op.csv")
+
+result_vector_ge_cp <- read_csv("../predictions/chemical_cv4/predictions/late_fusion_cs_ge.csv")  
+result_vector_mobc_cp <- read_csv("../predictions/chemical_cv4/predictions/late_fusion_cs_mobc.csv") 
+result_vector_ge_mobc <- read_csv("../predictions/chemical_cv4/predictions/late_fusion_ge_mobc.csv") 
+result_vector_ge_mobc_cp <- read_csv("../predictions/chemical_cv4/predictions/late_fusion_cs_ge_mobc.csv")
+
+```
+# color codes 
+# yellow F1C232 (chemical)
+# blue 6FA8DC (gene expression) 
+# green 93C47C (morphology)
+
+```{r}
+
+plot_roc_single_predictors <- function(assay_id_to_plot) {
+ 
+  test_data <- data.frame(
+    response =  response %>% extract2(assay_id_to_plot), 
+    result_cp = result_vector_cp %>% extract2(assay_id_to_plot),
+    result_mobc = result_vector_mobc %>% extract2(assay_id_to_plot),
+    result_ge = result_vector_ge %>% extract2(assay_id_to_plot)
+    )
+  
+  longdata <- melt_roc(test_data, "response", c("result_cp", "result_mobc","result_ge"))
+  
+  ggplot(longdata, aes(d = D, m = M, color = name)) + 
+    geom_roc(labels = FALSE, pointsize = 0) + 
+    theme_linedraw() + 
+    coord_fixed() +
+    scale_color_manual(values=c("#F1C232","#6FA8DC","#93C47C")) + 
+    ggtitle( paste0("roc_",assay_id_to_plot,".png")   ) + 
+    theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+      panel.background = element_blank(), axis.line = element_line(colour = "black")) + 
+    theme(text = element_text(size=16)) + 
+    xlab("False Positive Fraction") +
+    ylab("True Positive Fraction")  + 
+    theme(legend.position="left")
+  
+  save_name <- paste0("roc_singe_descriptor_",assay_id_to_plot,".png")
+  ggsave(paste0("../plots/",save_name))
+}
+```
+
+```{r}
+plot_roc_single_predictors("277_756")
+```
+
+
+```{r}
+plot_roc_combined_predictors <- function(assay_id_to_plot) {
+ 
+  test_data <- data.frame(
+    response =  response %>% extract2(assay_id_to_plot), 
+    result_ge_cp = result_vector_ge_cp %>% extract2(assay_id_to_plot),
+    result_ge_mobc_cp = result_vector_ge_mobc_cp %>% extract2(assay_id_to_plot),
+    result_mobc_cp = result_vector_mobc_cp %>% extract2(assay_id_to_plot),
+    result_ge_mobc = result_vector_ge_mobc %>% extract2(assay_id_to_plot)
+    )
+
+  longdata <- melt_roc(test_data, "response", c("result_ge_cp", "result_ge_mobc_cp","result_mobc_cp", "result_ge_mobc"))
+
+  ggplot(longdata, aes(d = D, m = M, color = name)) + 
+    geom_roc(labels = FALSE, pointsize = 0) + 
+    theme_linedraw() + 
+    coord_fixed() +
+    ggtitle( paste0("roc_",assay_id_to_plot,".png")   ) + 
+    theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+      panel.background = element_blank(), axis.line = element_line(colour = "black")) + 
+    theme(text = element_text(size=16)) + 
+    xlab("False Positive Fraction") +
+    ylab("True Positive Fraction") + 
+    theme(legend.position="none")
+
+  save_name <- paste0("roc_",assay_id_to_plot,".png")
+  ggsave(paste0("../plots/",save_name))
+}
+```
+
+## show ROC curves 
+```{r}
+plot_roc_combined_predictors("277_756")
+```
+
+```
