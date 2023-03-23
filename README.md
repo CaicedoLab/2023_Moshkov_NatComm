@@ -51,7 +51,7 @@ The related preprint [Predicting compound activity from phenotypic profiles and 
 - Figure 1D That is the final plot of `./analysis/02-dataset-filtering.ipynb`, similar plots can be produced with `./analysis/08-exceed_auc.ipynb`.
 - Figure 1E Generated in `./analysis/03-generate_splits_and_UMAP.ipynb`.
 - Figure 1F This data can be found in the Excel file (see paper's dataset on Zenodo).
-- Figure 2A Generated in `./analysis/07-assay_modality_AUC_plots.ipynb` with `predictions/scaffold_median_AUC.csv`.
+- Figure 2A Generated in `./analysis/10-AUC_comparison.ipynb` with `predictions/scaffold_median_AUC.csv`.
 - Figure 2B Generated in `./analysis/09-Venn_diagrams.ipynb` with `predictions/scaffold_median_AUC.csv` (Venn diagram) and Excel file (bar plots, see paper's dataset on Zenodo).
 - Figure 2C Generated in `./analysis/12-Boxplots.ipynb`, also see script `./python/mean_and_median.py` and data `predictions/scaffold_median_AUC.csv`.
 - Figure 2D See Excel file (see paper's dataset on Zenodo) and `predictions/scaffold_median_AUC.csv`). 
